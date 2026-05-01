@@ -7,18 +7,18 @@ Free, open-source, privacy-respecting nutrition tracker. Progressive Web App —
 - **Photos never persist.** AI scans send the image to Gemini once, then discard it.
 - **Bring-Your-Own-Key** for AI scans (free Gemini key, 1,500 scans/day).
 - **Multi-country barcodes** via Open Food Facts + USDA FoodData Central.
-- **Local-first** via IndexedDB; syncs to Supabase when signed in.
+- **Fully local.** Your data lives in your browser via IndexedDB. No accounts, no cloud.
 - **Open source** under AGPL-3.0.
 
 ## Stack
 
-Next.js 15 · Tailwind CSS · Supabase (Postgres + Auth) · Dexie (IndexedDB) · Recharts · next-intl · ZXing · Google Gemini 1.5 Flash.
+Next.js 15 · Tailwind CSS · Dexie (IndexedDB) · Recharts · next-intl · ZXing · Google Gemini 1.5 Flash.
 
 ## Develop
 
 ```bash
 cp .env.local.example .env.local
-# fill in NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY (optional — app works fully offline without them)
+# (env vars are optional — the app runs fully without them)
 
 npm install
 npm run dev
@@ -26,12 +26,21 @@ npm run dev
 
 Visit <http://localhost:3000>.
 
-## Supabase setup
+## Deploy to Vercel
 
-1. Create a project in the **EU region** (privacy + GDPR).
-2. Run [`supabase/schema.sql`](supabase/schema.sql) in the SQL editor.
-3. In Auth → Providers, enable Google + Email + Magic link.
-4. Copy the project URL and anon key into `.env.local`.
+1. Push the repo to GitHub.
+2. *Import Project* in Vercel — framework auto-detects as Next.js.
+3. (Optional) set `NEXT_PUBLIC_USDA_API_KEY` and `NEXT_PUBLIC_SITE_URL`.
+4. Deploy.
+
+## Where data lives
+
+Soma stores everything locally in your browser using IndexedDB (Dexie):
+
+- profile, weight logs, food log entries, custom foods, barcode cache
+- your Gemini API key in `localStorage`
+
+Use **Settings → Export JSON** to back up. Use **Settings → Clear local data** to wipe.
 
 ## Design system
 

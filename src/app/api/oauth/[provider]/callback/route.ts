@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { getSupabaseServerClient } from '@/lib/supabase/server';
 
 const TOKEN_URLS: Record<string, string> = {
   strava: 'https://www.strava.com/api/v3/oauth/token',
@@ -13,20 +12,26 @@ const ENV_KEYS: Record<string, [string, string]> = {
   garmin: ['GARMIN_CLIENT_ID', 'GARMIN_CLIENT_SECRET'],
 };
 
+function bounce(origin: string, fragment: Record<string, string>) {
+  const hash = new URLSearchParams(fragment).toString();
+  return NextResponse.redirect(new URL(`/app/settings#${hash}`, origin));
+}
+
 export async function GET(req: Request, { params }: { params: Promise<{ provider: string }> }) {
   const { provider } = await params;
   const url = new URL(req.url);
   const code = url.searchParams.get('code');
   const tokenUrl = TOKEN_URLS[provider];
   const keys = ENV_KEYS[provider];
+
   if (!code || !tokenUrl || !keys) {
-    return NextResponse.redirect(new URL('/app/settings?oauth=error', url.origin));
+    return bounce(url.origin, { oauth: provider, status: 'error' });
   }
   const [idEnv, secretEnv] = keys;
   const clientId = process.env[idEnv];
   const clientSecret = process.env[secretEnv];
   if (!clientId || !clientSecret) {
-    return NextResponse.redirect(new URL('/app/settings?oauth=missing-keys', url.origin));
+    return bounce(url.origin, { oauth: provider, status: 'missing-keys' });
   }
 
   const body = new URLSearchParams({
@@ -46,30 +51,23 @@ export async function GET(req: Request, { params }: { params: Promise<{ provider
     });
     token = await res.json();
   } catch {
-    return NextResponse.redirect(new URL('/app/settings?oauth=token-failed', url.origin));
+    return bounce(url.origin, { oauth: provider, status: 'token-failed' });
   }
 
-  try {
-    const supabase = await getSupabaseServerClient();
-    const { data: u } = await supabase.auth.getUser();
-    if (u.user) {
-      await supabase.from('integrations').upsert(
-        {
-          user_id: u.user.id,
-          provider,
-          access_token: token.access_token,
-          refresh_token: token.refresh_token,
-          expires_at: token.expires_at
-            ? new Date(token.expires_at * 1000).toISOString()
-            : null,
-          scope: token.scope ?? null,
-        },
-        { onConflict: 'user_id,provider' },
-      );
-    }
-  } catch {
-    // user not signed in or supabase not configured — silently skip persistence
+  if (!token?.access_token) {
+    return bounce(url.origin, { oauth: provider, status: 'no-token' });
   }
 
-  return NextResponse.redirect(new URL(`/app/settings?oauth=${provider}`, url.origin));
+  // Tokens are returned in the URL fragment (never sent to the server) so the
+  // settings page can persist them to IndexedDB on this device only.
+  return bounce(url.origin, {
+    oauth: provider,
+    status: 'ok',
+    access_token: token.access_token,
+    refresh_token: token.refresh_token ?? '',
+    expires_at: token.expires_at
+      ? new Date(token.expires_at * 1000).toISOString()
+      : '',
+    scope: token.scope ?? '',
+  });
 }

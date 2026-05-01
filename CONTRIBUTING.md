@@ -12,7 +12,7 @@ npm run typecheck
 npm run lint
 ```
 
-The app runs fully offline without Supabase configured — you can develop most features without setting up a project. Auth, cloud sync, and OAuth integrations require Supabase.
+The app is fully local — no backend, no accounts. Everything lives in IndexedDB on the device.
 
 ## Branch & PR conventions
 

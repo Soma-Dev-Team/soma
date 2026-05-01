@@ -73,6 +73,15 @@ export interface ActivityLog extends SyncMeta {
   raw?: Record<string, unknown>;
 }
 
+export interface Integration extends SyncMeta {
+  provider: 'strava' | 'garmin' | 'withings';
+  access_token: string;
+  refresh_token?: string;
+  expires_at?: string;
+  scope?: string;
+  connected_at: string;
+}
+
 export interface BarcodeCacheEntry {
   barcode: string;
   food: Food;
@@ -85,6 +94,7 @@ class SomaDB extends Dexie {
   foods!: Table<Food, string>;
   meal_logs!: Table<MealLog, string>;
   activity_logs!: Table<ActivityLog, string>;
+  integrations!: Table<Integration, string>;
   barcode_cache!: Table<BarcodeCacheEntry, string>;
 
   constructor() {
@@ -95,6 +105,7 @@ class SomaDB extends Dexie {
       foods: 'id, name, source, source_id, _synced, _updated_at',
       meal_logs: 'id, logged_at, food_id, meal, _synced, _updated_at',
       activity_logs: 'id, started_at, source, _synced, _updated_at',
+      integrations: 'provider, _synced, _updated_at',
       barcode_cache: 'barcode, cached_at',
     });
   }

@@ -9,32 +9,58 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { exportAll, getProfile, saveProfile, wipeAll } from '@/lib/db/repo';
+import {
+  disconnectIntegration,
+  exportAll,
+  getProfile,
+  listIntegrations,
+  saveIntegration,
+  saveProfile,
+  wipeAll,
+} from '@/lib/db/repo';
 import { getStoredGeminiKey, setStoredGeminiKey } from '@/lib/gemini';
-import { getSupabaseBrowserClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import { ExternalLink } from 'lucide-react';
+import type { Integration } from '@/lib/db/dexie';
+
+type ProviderId = Integration['provider'];
 
 export default function SettingsPage() {
   const t = useTranslations('settings');
   const profile = useLiveQuery(() => getProfile(), []);
+  const integrations = useLiveQuery(() => listIntegrations(), []);
   const [geminiKey, setGeminiKey] = useState('');
   const [savedKey, setSavedKey] = useState(false);
-  const [user, setUser] = useState<{ email?: string } | null>(null);
+  const [oauthMsg, setOauthMsg] = useState<string | null>(null);
 
   useEffect(() => {
     setGeminiKey(getStoredGeminiKey());
-    if (isSupabaseConfigured()) {
-      getSupabaseBrowserClient()
-        .auth.getUser()
-        .then(({ data }) => setUser(data.user ? { email: data.user.email ?? undefined } : null));
-    }
   }, []);
 
-  async function signOut() {
-    if (!isSupabaseConfigured()) return;
-    await getSupabaseBrowserClient().auth.signOut();
-    setUser(null);
-  }
+  // Capture OAuth callback fragments and persist locally.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const hash = window.location.hash;
+    if (!hash || !hash.includes('oauth=')) return;
+    const p = new URLSearchParams(hash.slice(1));
+    const provider = p.get('oauth') as ProviderId | null;
+    const status = p.get('status');
+    if (!provider) return;
+
+    if (status === 'ok' && p.get('access_token')) {
+      saveIntegration({
+        provider,
+        access_token: p.get('access_token') ?? '',
+        refresh_token: p.get('refresh_token') || undefined,
+        expires_at: p.get('expires_at') || undefined,
+        scope: p.get('scope') || undefined,
+      }).then(() => setOauthMsg(`Connected ${provider}.`));
+    } else if (status === 'missing-keys') {
+      setOauthMsg(`${provider} is not configured on this deployment.`);
+    } else {
+      setOauthMsg(`Could not connect ${provider}.`);
+    }
+    history.replaceState(null, '', '/app/settings');
+  }, []);
 
   async function handleExport() {
     const data = await exportAll();
@@ -59,30 +85,23 @@ export default function SettingsPage() {
     setTimeout(() => setSavedKey(false), 1500);
   }
 
+  const connected = new Map((integrations ?? []).map((i) => [i.provider, i]));
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl wordmark">settings</h1>
 
+      {oauthMsg && (
+        <div className="rounded-lg border border-border bg-surface px-4 py-3 text-sm">{oauthMsg}</div>
+      )}
+
       <Card>
         <CardContent className="pt-5 space-y-3">
           <h2 className="label-mono text-muted-foreground">ACCOUNT</h2>
-          {user?.email ? (
-            <div className="flex items-center justify-between">
-              <span className="text-sm">{user.email}</span>
-              <Button variant="ghost" size="sm" onClick={signOut}>
-                Sign out
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Local-only mode</span>
-              <Link href="/login">
-                <Button size="sm" variant="secondary">
-                  Sign in
-                </Button>
-              </Link>
-            </div>
-          )}
+          <p className="text-sm text-muted-foreground">
+            No sign-in needed. Your data lives only in this browser. Use Export JSON below to move
+            it between devices.
+          </p>
         </CardContent>
       </Card>
 
@@ -148,12 +167,24 @@ export default function SettingsPage() {
         <CardContent className="pt-5 space-y-3">
           <h2 className="label-mono text-muted-foreground">{t('integrations').toUpperCase()}</h2>
           <p className="text-xs text-muted-foreground">
-            Connect a service to auto-pull activity and body data.
+            Connect a service to pull activity and body data. Tokens are stored only on this device.
           </p>
           <div className="space-y-2">
-            <IntegrationRow name={t('connect_strava')} provider="strava" />
-            <IntegrationRow name={t('connect_withings')} provider="withings" />
-            <IntegrationRow name={t('connect_garmin')} provider="garmin" />
+            <IntegrationRow
+              provider="strava"
+              label={t('connect_strava')}
+              connected={connected.get('strava')}
+            />
+            <IntegrationRow
+              provider="withings"
+              label={t('connect_withings')}
+              connected={connected.get('withings')}
+            />
+            <IntegrationRow
+              provider="garmin"
+              label={t('connect_garmin')}
+              connected={connected.get('garmin')}
+            />
           </div>
         </CardContent>
       </Card>
@@ -179,15 +210,36 @@ export default function SettingsPage() {
   );
 }
 
-function IntegrationRow({ name, provider }: { name: string; provider: 'strava' | 'withings' | 'garmin' }) {
+function IntegrationRow({
+  provider,
+  label,
+  connected,
+}: {
+  provider: ProviderId;
+  label: string;
+  connected: Integration | undefined;
+}) {
   return (
     <div className="flex items-center justify-between rounded-lg border border-border px-3 py-2.5">
-      <span className="text-sm">{name}</span>
-      <Link href={`/api/oauth/${provider}/start`}>
-        <Button size="sm" variant="ghost">
-          Connect
+      <div>
+        <div className="text-sm">{label}</div>
+        {connected && (
+          <div className="label-mono text-muted-foreground mt-0.5">
+            CONNECTED {connected.connected_at.slice(0, 10)}
+          </div>
+        )}
+      </div>
+      {connected ? (
+        <Button size="sm" variant="ghost" onClick={() => disconnectIntegration(provider)}>
+          Disconnect
         </Button>
-      </Link>
+      ) : (
+        <Link href={`/api/oauth/${provider}/start`}>
+          <Button size="sm" variant="ghost">
+            Connect
+          </Button>
+        </Link>
+      )}
     </div>
   );
 }

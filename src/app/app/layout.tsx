@@ -1,6 +1,5 @@
 import { AppNav } from '@/components/app-nav';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { SyncBootstrap } from '@/components/sync-bootstrap';
 import { SomaMark } from '@/components/soma-mark';
 import Link from 'next/link';
 
@@ -19,7 +18,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </header>
         <main className="mx-auto max-w-2xl px-5 py-6">{children}</main>
       </div>
-      <SyncBootstrap />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { getDB, PROFILE_ID, type Food, type MealLog, type Profile, type WeightLog } from './dexie';
+import { getDB, PROFILE_ID, type Food, type Integration, type MealLog, type Profile, type WeightLog } from './dexie';
 import { uuid } from '../utils';
 
 const now = () => new Date().toISOString();
@@ -114,14 +114,40 @@ export async function recentFoods(limit = 10): Promise<Food[]> {
   return out;
 }
 
+export async function saveIntegration(
+  input: Omit<Integration, '_synced' | '_updated_at' | 'connected_at'> & { connected_at?: string },
+): Promise<Integration> {
+  const entry: Integration = {
+    ...input,
+    connected_at: input.connected_at ?? now(),
+    _synced: 0,
+    _updated_at: now(),
+  };
+  await getDB().integrations.put(entry);
+  return entry;
+}
+
+export async function listIntegrations(): Promise<Integration[]> {
+  return getDB().integrations.toArray();
+}
+
+export async function getIntegration(provider: Integration['provider']): Promise<Integration | undefined> {
+  return getDB().integrations.get(provider);
+}
+
+export async function disconnectIntegration(provider: Integration['provider']) {
+  await getDB().integrations.delete(provider);
+}
+
 export async function exportAll() {
   const db = getDB();
-  const [profiles, weight_logs, foods, meal_logs, activity_logs] = await Promise.all([
+  const [profiles, weight_logs, foods, meal_logs, activity_logs, integrations] = await Promise.all([
     db.profiles.toArray(),
     db.weight_logs.toArray(),
     db.foods.toArray(),
     db.meal_logs.toArray(),
     db.activity_logs.toArray(),
+    db.integrations.toArray(),
   ]);
   return {
     exported_at: now(),
@@ -131,6 +157,7 @@ export async function exportAll() {
     foods,
     meal_logs,
     activity_logs,
+    integrations: integrations.map(({ access_token, refresh_token, ...rest }) => rest),
   };
 }
 
@@ -142,6 +169,7 @@ export async function wipeAll() {
     db.foods.clear(),
     db.meal_logs.clear(),
     db.activity_logs.clear(),
+    db.integrations.clear(),
     db.barcode_cache.clear(),
   ]);
 }
