@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Soma — Renderer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; background: #888; }
+  body { font-family: 'Manrope', sans-serif; }
+  .frame { display: block; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/html-to-image@1.11.11/dist/html-to-image.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+
+const SOMA_INK = "#18201C";
+const SOMA_PAPER = "#F4F0EA";
+const SOMA_DARK = "#171A1F";
+const SOMA_MID = "#0E1722";
+const SOMA_SAND = "#E4DCCD";
+const SOMA_SLATE = "oklch(0.62 0.04 240)";
+const SOMA_SLATE_DEEP = "oklch(0.42 0.05 240)";
+
+// pull current tweak settings from URL: ?pct=75&weight=regular&wm=500
+const params = new URLSearchParams(location.search);
+const RING_PCT = (parseFloat(params.get('pct') || '75')) / 100;
+const RING_WEIGHT = params.get('weight') || 'regular';
+const WM_WEIGHT = parseInt(params.get('wm') || '500', 10);
+
+function GraphiteRing({ size, r, sw, pct, fromC, toC, trackC, gid }) {
+  const C = 2 * Math.PI * r;
+  const cx = size/2, cy = size/2;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <defs>
+        <linearGradient id={gid} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stopColor={fromC} />
+          <stop offset="100%" stopColor={toC} />
+        </linearGradient>
+      </defs>
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={trackC} strokeWidth={sw} />
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={`url(#${gid})`} strokeWidth={sw} strokeLinecap="round"
+              strokeDasharray={`${C * pct} ${C}`} transform={`rotate(-90 ${cx} ${cy})`} />
+    </svg>
+  );
+}
+
+function ringDimsFor(size, weight) {
+  const swPct = weight === "thin" ? 0.075 : weight === "heavy" ? 0.155 : 0.118;
+  const sw = Math.max(2, Math.round(size * swPct));
+  const r = Math.round(size/2 - sw/2 - size * 0.018);
+  return { sw, r };
+}
+
+const palettes = {
+  dark:  { bg: SOMA_DARK,        ringFrom: SOMA_SLATE,      ringTo: SOMA_PAPER, ringTrack: `${SOMA_PAPER}1a`, fg: SOMA_PAPER },
+  mid:   { bg: SOMA_MID,         ringFrom: SOMA_SLATE,      ringTo: SOMA_PAPER, ringTrack: `${SOMA_PAPER}1a`, fg: SOMA_PAPER },
+  deep:  { bg: SOMA_SLATE_DEEP,  ringFrom: SOMA_PAPER,      ringTo: SOMA_SLATE, ringTrack: `${SOMA_PAPER}26`, fg: SOMA_PAPER },
+  slate: { bg: SOMA_SLATE,       ringFrom: SOMA_PAPER,      ringTo: SOMA_INK,   ringTrack: `${SOMA_PAPER}33`, fg: SOMA_PAPER },
+  light: { bg: SOMA_PAPER,       ringFrom: SOMA_SLATE_DEEP, ringTo: SOMA_INK,   ringTrack: `${SOMA_INK}14`,    fg: SOMA_INK   },
+  sand:  { bg: SOMA_SAND,        ringFrom: SOMA_SLATE_DEEP, ringTo: SOMA_INK,   ringTrack: `${SOMA_INK}14`,    fg: SOMA_INK   },
+};
+
+// horizontal lockup, 1400x520
+function LockupFrame({ p, gid }) {
+  const ringSize = 220;
+  const { sw, r } = ringDimsFor(ringSize, RING_WEIGHT);
+  return (
+    <div data-export={`lockup-${gid}`} className="frame" style={{ width: 1400, height: 520, background: p.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 40 }}>
+        <GraphiteRing size={ringSize} r={r} sw={sw} pct={RING_PCT} fromC={p.ringFrom} toC={p.ringTo} trackC={p.ringTrack} gid={`lk-${gid}`} />
+        <div style={{ fontFamily: "'Manrope', sans-serif", fontWeight: WM_WEIGHT, fontSize: 144, letterSpacing: "-0.05em", color: p.fg, lineHeight: 1 }}>soma</div>
+      </div>
+    </div>
+  );
+}
+
+// app icon, mark only, 240x240 with 54px rounded corners
+function IconMarkFrame({ p, gid }) {
+  const tile = 240;
+  const ringSize = Math.round(tile * 0.66);
+  const { sw, r } = ringDimsFor(ringSize, RING_WEIGHT);
+  return (
+    <div data-export={`icon-${gid}`} className="frame" style={{ width: tile, height: tile, background: p.bg, borderRadius: 54, display: "grid", placeItems: "center", overflow: "hidden" }}>
+      <GraphiteRing size={ringSize} r={r} sw={sw} pct={RING_PCT} fromC={p.ringFrom} toC={p.ringTo} trackC={p.ringTrack} gid={`ic-${gid}`} />
+    </div>
+  );
+}
+
+// app icon, ring + wordmark stacked, 240x240
+function IconStackedFrame({ p, gid }) {
+  const tile = 240;
+  const ringSize = Math.round(tile * 0.52);
+  const { sw, r } = ringDimsFor(ringSize, RING_WEIGHT);
+  return (
+    <div data-export={`icon-text-${gid}`} className="frame" style={{ width: tile, height: tile, background: p.bg, borderRadius: 54, display: "grid", placeItems: "center", overflow: "hidden" }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+        <GraphiteRing size={ringSize} r={r} sw={sw} pct={RING_PCT} fromC={p.ringFrom} toC={p.ringTo} trackC={p.ringTrack} gid={`it-${gid}`} />
+        <div style={{ fontFamily: "'Manrope', sans-serif", fontWeight: WM_WEIGHT, fontSize: Math.round(tile * 0.22), letterSpacing: "-0.05em", color: p.fg, lineHeight: 1 }}>soma</div>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: 8 }}>
+      {Object.entries(palettes).map(([name, p]) => (
+        <React.Fragment key={name}>
+          <LockupFrame p={p} gid={name} />
+          <IconMarkFrame p={p} gid={name} />
+          <IconStackedFrame p={p} gid={name} />
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+
+// Signal once Manrope is ready
+document.fonts.ready.then(() => {
+  document.body.dataset.fontsReady = '1';
+});
+</script>
+</body>
+</html>

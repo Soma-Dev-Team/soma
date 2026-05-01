@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Soma — RD9 Graphite Duotone tokens
+ * ink #18201C · paper #F4F0EA · dark #171A1F · midnight #0E1722 · sand #E4DCCD
+ * slate oklch(0.62 0.04 240) · slate-deep oklch(0.42 0.05 240)
+ */
+
+@layer base {
+  :root {
+    --soma-ink: 153 14% 11%;          /* #18201C */
+    --soma-paper: 38 27% 94%;         /* #F4F0EA */
+    --soma-dark: 220 11% 11%;         /* #171A1F */
+    --soma-midnight: 213 43% 9%;      /* #0E1722 */
+    --soma-sand: 38 28% 85%;          /* #E4DCCD */
+
+    --soma-slate: oklch(0.62 0.04 240);
+    --soma-slate-deep: oklch(0.42 0.05 240);
+
+    --background: var(--soma-paper);
+    --foreground: var(--soma-ink);
+    --surface: 38 35% 96%;            /* slightly lighter than paper for cards */
+    --muted: 153 14% 11% / 0.55;
+    --muted-foreground: 153 14% 11% / 0.7;
+    --accent: var(--soma-ink);
+    --accent-foreground: var(--soma-paper);
+    --border: 153 14% 11% / 0.12;
+    --ring: 153 14% 11% / 0.4;
+    --destructive: 0 60% 38%;
+    --destructive-foreground: var(--soma-paper);
+    --radius: 1rem;
+
+    --ring-from: var(--soma-slate-deep);
+    --ring-to: oklch(0.18 0.01 153);   /* near-ink endpoint of gradient */
+    --ring-track: 153 14% 11% / 0.08;
+  }
+
+  .dark {
+    --background: var(--soma-dark);
+    --foreground: var(--soma-paper);
+    --surface: 220 11% 14%;
+    --muted: 38 27% 94% / 0.55;
+    --muted-foreground: 38 27% 94% / 0.7;
+    --accent: var(--soma-paper);
+    --accent-foreground: var(--soma-ink);
+    --border: 38 27% 94% / 0.12;
+    --ring: 38 27% 94% / 0.4;
+    --destructive: 0 65% 55%;
+    --destructive-foreground: var(--soma-ink);
+
+    --ring-from: var(--soma-slate);
+    --ring-to: oklch(0.94 0.005 60);  /* paper endpoint of gradient */
+    --ring-track: 38 27% 94% / 0.1;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+  html, body {
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-feature-settings: "ss01", "cv11";
+  }
+  body {
+    @apply min-h-screen antialiased;
+    font-family: 'Manrope', system-ui, sans-serif;
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+  .wordmark {
+    font-family: 'Manrope', system-ui, sans-serif;
+    font-weight: 500;
+    letter-spacing: -0.05em;
+    line-height: 1;
+  }
+  .label-mono {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.6875rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+}
+
+@layer utilities {
+  .bg-paper { background-color: hsl(var(--soma-paper)); }
+  .bg-ink { background-color: hsl(var(--soma-ink)); }
+  .bg-graphite { background-color: hsl(var(--soma-dark)); }
+  .bg-sand { background-color: hsl(var(--soma-sand)); }
+  .text-ink { color: hsl(var(--soma-ink)); }
+  .text-paper { color: hsl(var(--soma-paper)); }
+}

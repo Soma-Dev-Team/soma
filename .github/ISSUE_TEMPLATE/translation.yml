@@ -1,0 +1,16 @@
+name: Translation contribution
+description: Add or fix a language translation.
+labels: ["i18n"]
+body:
+  - type: input
+    id: locale
+    attributes:
+      label: Locale
+      placeholder: de, fr, es, it
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Anything that needs reviewer context (idioms, ambiguous strings, etc.)

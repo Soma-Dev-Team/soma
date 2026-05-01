@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Soma — RD9 Graphite Duotone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  html, body, #root { margin: 0; padding: 0; min-height: 100%; background: #EDE8E0; }
+  body { font-family: 'Manrope', system-ui, sans-serif; color: #18201C; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel">
+const { useTweaks, TweaksPanel, TweakSection, TweakSlider, TweakRadio, TweakToggle } = window;
+
+const SOMA_INK   = "#18201C";
+const SOMA_PAPER = "#F4F0EA";
+const SOMA_DARK  = "#171A1F";
+const SOMA_SLATE = "oklch(0.62 0.04 240)";
+const SOMA_SLATE_DEEP = "oklch(0.42 0.05 240)";
+const SOMA_MID   = "#0E1722";
+const SOMA_SAND  = "#E4DCCD";
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "ringPct": 75,
+  "ringWeight": "regular",
+  "wordmarkWeight": 500,
+  "iconLayout": "stacked",
+  "showSmall": true
+}/*EDITMODE-END*/;
+
+// ───────── Ring (gradient) ─────────
+function GraphiteRing({ size = 220, r = 84, sw = 26, pct = 0.72, fromC, toC, trackC, gid }) {
+  const C = 2 * Math.PI * r;
+  const cx = size / 2, cy = size / 2;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <defs>
+        <linearGradient id={gid} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={fromC} />
+          <stop offset="100%" stopColor={toC} />
+        </linearGradient>
+      </defs>
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={trackC} strokeWidth={sw} />
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={`url(#${gid})`} strokeWidth={sw} strokeLinecap="round"
+        strokeDasharray={`${C * pct} ${C}`} transform={`rotate(-90 ${cx} ${cy})`} />
+    </svg>
+  );
+}
+
+// ring weight presets relative to size
+function ringDimsFor(size, weight) {
+  const swPct = weight === "thin" ? 0.075 : weight === "heavy" ? 0.155 : 0.118; // of size
+  const sw = Math.max(2, Math.round(size * swPct));
+  const r  = Math.round(size / 2 - sw / 2 - size * 0.018);
+  return { sw, r };
+}
+
+// ───────── Lockup (full-bleed band) ─────────
+function Lockup({ bg, ringFrom, ringTo, ringTrack, fg, gid, label, ringPct, ringWeight, wordmarkWeight }) {
+  const ringSize = 220;
+  const { sw, r } = ringDimsFor(ringSize, ringWeight);
+  return (
+    <div style={{ background: bg, padding: "120px 80px", display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center", gap: 28 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 40 }}>
+        <GraphiteRing size={ringSize} r={r} sw={sw} pct={ringPct} fromC={ringFrom} toC={ringTo} trackC={ringTrack} gid={gid} />
+        <div style={{ fontFamily: "'Manrope', sans-serif", fontWeight: wordmarkWeight, fontSize: 144, letterSpacing: "-0.05em", color: fg, lineHeight: 1 }}>soma</div>
+      </div>
+      <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: `${fg}88`, letterSpacing: "0.18em", textTransform: "uppercase" }}>{label}</div>
+    </div>
+  );
+}
+
+// ───────── App icon — text integrated, two layouts ─────────
+function IconTile({ bg, ringFrom, ringTo, ringTrack, gid, fg, label, layout, ringPct, ringWeight, wordmarkWeight }) {
+  const tile = 240;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+      <div style={{
+        width: tile, height: tile, borderRadius: 54, background: bg,
+        display: "grid", placeItems: "center", overflow: "hidden",
+        boxShadow: "0 1px 0 rgba(0,0,0,0.04), 0 14px 40px rgba(20,28,36,0.10)",
+        position: "relative",
+      }}>
+        {layout === "stacked" ? <IconStacked tile={tile} fg={fg} ringFrom={ringFrom} ringTo={ringTo} ringTrack={ringTrack} gid={gid} ringPct={ringPct} ringWeight={ringWeight} wordmarkWeight={wordmarkWeight} />
+         : layout === "inside" ? <IconInside  tile={tile} fg={fg} ringFrom={ringFrom} ringTo={ringTo} ringTrack={ringTrack} gid={gid} ringPct={ringPct} ringWeight={ringWeight} wordmarkWeight={wordmarkWeight} />
+         :                       <IconSide    tile={tile} fg={fg} ringFrom={ringFrom} ringTo={ringTo} ringTrack={ringTrack} gid={gid} ringPct={ringPct} ringWeight={ringWeight} wordmarkWeight={wordmarkWeight} />}
+      </div>
+      <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: `${SOMA_INK}99`, letterSpacing: "0.06em" }}>{label}</div>
+    </div>
+  );
+}
+
+// stacked: ring on top, lowercase wordmark below — matches main lockup
+function IconStacked({ tile, fg, ringFrom, ringTo, ringTrack, gid, ringPct, ringWeight, wordmarkWeight }) {
+  const ringSize = Math.round(tile * 0.52);
+  const { sw, r } = ringDimsFor(ringSize, ringWeight);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+      <GraphiteRing size={ringSize} r={r} sw={sw} pct={ringPct} fromC={ringFrom} toC={ringTo} trackC={ringTrack} gid={gid} />
+      <div style={{ fontFamily: "'Manrope', sans-serif", fontWeight: wordmarkWeight, fontSize: Math.round(tile * 0.22), letterSpacing: "-0.05em", color: fg, lineHeight: 1 }}>soma</div>
+    </div>
+  );
+}
+
+// inside: lowercase wordmark sits inside the ring (centered)
+function IconInside({ tile, fg, ringFrom, ringTo, ringTrack, gid, ringPct, ringWeight, wordmarkWeight }) {
+  const ringSize = Math.round(tile * 0.78);
+  const { sw, r } = ringDimsFor(ringSize, ringWeight);
+  return (
+    <div style={{ position: "relative", width: ringSize, height: ringSize, display: "grid", placeItems: "center" }}>
+      <GraphiteRing size={ringSize} r={r} sw={sw} pct={ringPct} fromC={ringFrom} toC={ringTo} trackC={ringTrack} gid={gid} />
+      <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center" }}>
+        <div style={{ fontFamily: "'Manrope', sans-serif", fontWeight: wordmarkWeight, fontSize: Math.round(tile * 0.16), letterSpacing: "-0.05em", color: fg, lineHeight: 1 }}>soma</div>
+      </div>
+    </div>
+  );
+}
+
+// side: ring + wordmark in horizontal lockup, fitted
+function IconSide({ tile, fg, ringFrom, ringTo, ringTrack, gid, ringPct, ringWeight, wordmarkWeight }) {
+  const ringSize = Math.round(tile * 0.46);
+  const { sw, r } = ringDimsFor(ringSize, ringWeight);
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <GraphiteRing size={ringSize} r={r} sw={sw} pct={ringPct} fromC={ringFrom} toC={ringTo} trackC={ringTrack} gid={gid} />
+      <div style={{ fontFamily: "'Manrope', sans-serif", fontWeight: wordmarkWeight, fontSize: Math.round(tile * 0.21), letterSpacing: "-0.05em", color: fg, lineHeight: 1 }}>soma</div>
+    </div>
+  );
+}
+
+// ring-only icon — no wordmark
+function IconMarkOnly({ bg, ringFrom, ringTo, ringTrack, gid, label, ringPct, ringWeight }) {
+  const tile = 240;
+  const ringSize = Math.round(tile * 0.66);
+  const { sw, r } = ringDimsFor(ringSize, ringWeight);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+      <div style={{
+        width: tile, height: tile, borderRadius: 54, background: bg,
+        display: "grid", placeItems: "center",
+        boxShadow: "0 1px 0 rgba(0,0,0,0.04), 0 14px 40px rgba(20,28,36,0.10)",
+      }}>
+        <GraphiteRing size={ringSize} r={r} sw={sw} pct={ringPct} fromC={ringFrom} toC={ringTo} trackC={ringTrack} gid={gid} />
+      </div>
+      <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: `${SOMA_INK}99`, letterSpacing: "0.06em" }}>{label}</div>
+    </div>
+  );
+}
+
+// ───────── Page ─────────
+function Page() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const ringPct = t.ringPct / 100;
+  const palettes = {
+    dark:  { bg: SOMA_DARK,        ringFrom: SOMA_SLATE,      ringTo: SOMA_PAPER, ringTrack: `${SOMA_PAPER}1a`, fg: SOMA_PAPER },
+    mid:   { bg: SOMA_MID,         ringFrom: SOMA_SLATE,      ringTo: SOMA_PAPER, ringTrack: `${SOMA_PAPER}1a`, fg: SOMA_PAPER },
+    deep:  { bg: SOMA_SLATE_DEEP,  ringFrom: SOMA_PAPER,      ringTo: SOMA_SLATE, ringTrack: `${SOMA_PAPER}26`, fg: SOMA_PAPER },
+    slate: { bg: SOMA_SLATE,       ringFrom: SOMA_PAPER,      ringTo: SOMA_INK,   ringTrack: `${SOMA_PAPER}33`, fg: SOMA_PAPER },
+    light: { bg: SOMA_PAPER,       ringFrom: SOMA_SLATE_DEEP, ringTo: SOMA_INK,   ringTrack: `${SOMA_INK}14`,    fg: SOMA_INK   },
+    sand:  { bg: SOMA_SAND,        ringFrom: SOMA_SLATE_DEEP, ringTo: SOMA_INK,   ringTrack: `${SOMA_INK}14`,    fg: SOMA_INK   },
+  };
+  const lockupCommon = { ringPct, ringWeight: t.ringWeight, wordmarkWeight: t.wordmarkWeight };
+
+  return (
+    <div>
+      {/* primary lockups, full bleed: dark · slate · light */}
+      <Lockup {...palettes.dark}  gid="bd-dark"  label="Dark · primary"  {...lockupCommon} />
+      <Lockup {...palettes.slate} gid="bd-slate" label="Slate · ground"  {...lockupCommon} />
+      <Lockup {...palettes.light} gid="bd-light" label="Light · primary" {...lockupCommon} />
+
+      {/* meta strip */}
+      <div style={{ background: SOMA_PAPER, borderTop: `1px solid ${SOMA_INK}14`, borderBottom: `1px solid ${SOMA_INK}14`, padding: "20px 80px", display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: `${SOMA_INK}99`, letterSpacing: "0.08em" }}>
+        <span>RD9 · GRAPHITE DUOTONE</span>
+        <span>σῶμα · BODY</span>
+        <span>RING {Math.round(ringPct * 100)}% · {t.ringWeight.toUpperCase()}</span>
+      </div>
+
+      {/* app icons — text integrated */}
+      <div style={{ background: SOMA_PAPER, padding: "80px 80px 32px" }}>
+        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: `${SOMA_INK}99`, letterSpacing: "0.08em", marginBottom: 36 }}>APP ICONS · WORDMARK INTEGRATED ({t.iconLayout})</div>
+        <div style={{ display: "flex", gap: 48, flexWrap: "wrap" }}>
+          <IconTile {...palettes.dark}  gid="ic-dark"  label="Dark · primary"  layout={t.iconLayout} {...lockupCommon} />
+          <IconTile {...palettes.mid}   gid="ic-mid"   label="Midnight"        layout={t.iconLayout} {...lockupCommon} />
+          <IconTile {...palettes.deep}  gid="ic-deep"  label="Deep slate"      layout={t.iconLayout} {...lockupCommon} />
+          <IconTile {...palettes.slate} gid="ic-slate" label="Slate · ground"  layout={t.iconLayout} {...lockupCommon} />
+          <IconTile {...palettes.light} gid="ic-light" label="Light · primary" layout={t.iconLayout} {...lockupCommon} />
+          <IconTile {...palettes.sand}  gid="ic-sand"  label="Sand"            layout={t.iconLayout} {...lockupCommon} />
+        </div>
+      </div>
+
+      {/* mark-only icons — no wordmark */}
+      <div style={{ background: SOMA_PAPER, padding: "32px 80px 32px" }}>
+        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: `${SOMA_INK}99`, letterSpacing: "0.08em", marginBottom: 36 }}>APP ICONS · MARK ONLY</div>
+        <div style={{ display: "flex", gap: 48, flexWrap: "wrap" }}>
+          <IconMarkOnly {...palettes.dark}  gid="mo-dark"  label="Dark · primary"  ringPct={ringPct} ringWeight={t.ringWeight} />
+          <IconMarkOnly {...palettes.mid}   gid="mo-mid"   label="Midnight"        ringPct={ringPct} ringWeight={t.ringWeight} />
+          <IconMarkOnly {...palettes.deep}  gid="mo-deep"  label="Deep slate"      ringPct={ringPct} ringWeight={t.ringWeight} />
+          <IconMarkOnly {...palettes.slate} gid="mo-slate" label="Slate · ground"  ringPct={ringPct} ringWeight={t.ringWeight} />
+          <IconMarkOnly {...palettes.light} gid="mo-light" label="Light · primary" ringPct={ringPct} ringWeight={t.ringWeight} />
+          <IconMarkOnly {...palettes.sand}  gid="mo-sand"  label="Sand"            ringPct={ringPct} ringWeight={t.ringWeight} />
+        </div>
+      </div>
+
+      {/* small-size tests */}
+      {t.showSmall && (
+        <div style={{ background: SOMA_PAPER, padding: "16px 80px 80px" }}>
+          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: `${SOMA_INK}99`, letterSpacing: "0.08em", marginBottom: 24 }}>SMALL · 180 · 120 · 80 · 60 · 40</div>
+          <div style={{ display: "flex", gap: 32, alignItems: "center" }}>
+            {[180, 120, 80, 60, 40].map((s, i) => {
+              const ringSize = Math.round(s * 0.78);
+              const { sw, r } = ringDimsFor(ringSize, t.ringWeight);
+              return (
+                <div key={i} style={{ width: s, height: s, borderRadius: s * 0.22, background: SOMA_DARK, display: "grid", placeItems: "center" }}>
+                  <GraphiteRing size={ringSize} r={r} sw={sw} pct={ringPct} fromC={SOMA_SLATE} toC={SOMA_PAPER} trackC={`${SOMA_PAPER}1a`} gid={`sz-${i}`} />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div style={{ padding: "16px 80px 60px", background: SOMA_PAPER }}>
+        <a href="Soma Logo.html" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: `${SOMA_INK}cc`, letterSpacing: "0.06em", textDecoration: "none", borderBottom: `1px solid ${SOMA_INK}33`, paddingBottom: 2 }}>← back to canvas</a>
+      </div>
+
+      <TweaksPanel title="Soma · RD9">
+        <TweakSection label="Ring" />
+        <TweakSlider label="Progress"      value={t.ringPct}        min={0}   max={100} unit="%" onChange={(v) => setTweak('ringPct', v)} />
+        <TweakRadio  label="Stroke"        value={t.ringWeight}     options={['thin','regular','heavy']} onChange={(v) => setTweak('ringWeight', v)} />
+
+        <TweakSection label="Wordmark" />
+        <TweakRadio  label="Weight"        value={t.wordmarkWeight} options={[300, 400, 500, 600]} onChange={(v) => setTweak('wordmarkWeight', v)} />
+
+        <TweakSection label="App icon" />
+        <TweakRadio  label="Layout"        value={t.iconLayout}     options={['stacked','inside','side']} onChange={(v) => setTweak('iconLayout', v)} />
+
+        <TweakSection label="Page" />
+        <TweakToggle label="Small-size row" value={t.showSmall}     onChange={(v) => setTweak('showSmall', v)} />
+      </TweaksPanel>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Page />);
+</script>
+</body>
+</html>
