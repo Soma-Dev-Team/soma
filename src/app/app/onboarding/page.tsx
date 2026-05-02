@@ -22,6 +22,7 @@ import {
 } from '@/lib/tdee';
 import { kgToLbs, lbsToKg, inchesToCm } from '@/lib/utils';
 import { GraphiteRing } from '@/components/soma-mark';
+import { StatRing } from '@/components/stat-ring';
 
 type Units = 'metric' | 'imperial';
 
@@ -216,15 +217,22 @@ export default function OnboardingPage() {
           )}
 
           {step === 6 && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <h2 className="text-xl font-semibold">{t('targets_title')}</h2>
-              <div className="grid grid-cols-2 gap-3">
-                <Stat label={t('tdee')} value={`${Math.round(total)}`} suffix="kcal" />
-                <Stat label={t('target_calories')} value={`${target}`} suffix="kcal" />
+              <div className="grid grid-cols-2 gap-3 place-items-center">
+                <StatRing label={t('tdee')} value={Math.round(total)} unit="kcal" sub="kcal" size={120} />
+                <StatRing
+                  label={t('target_calories')}
+                  value={target}
+                  unit="kcal"
+                  target={Math.round(total)}
+                  sub="kcal"
+                  size={120}
+                />
               </div>
-              <div className="pt-2">
+              <div className="space-y-3">
                 <Label>{t('split')} (P / C / F %)</Label>
-                <div className="grid grid-cols-3 gap-2 mt-1.5">
+                <div className="grid grid-cols-3 gap-2">
                   <Input
                     type="number"
                     value={d.split.p}
@@ -241,9 +249,11 @@ export default function OnboardingPage() {
                     onChange={(e) => update({ split: { ...d.split, f: Number(e.target.value) } })}
                   />
                 </div>
-                <p className="text-xs text-muted-foreground mt-2 num">
-                  → {macros.protein_g}p / {macros.carbs_g}c / {macros.fat_g}f
-                </p>
+                <div className="grid grid-cols-3 gap-3 place-items-center pt-2">
+                  <StatRing label="P" value={macros.protein_g} unit="g" target={macros.protein_g} sub="g" size={72} weight="thin" />
+                  <StatRing label="C" value={macros.carbs_g} unit="g" target={macros.carbs_g} sub="g" size={72} weight="thin" />
+                  <StatRing label="F" value={macros.fat_g} unit="g" target={macros.fat_g} sub="g" size={72} weight="thin" />
+                </div>
               </div>
             </div>
           )}
@@ -285,18 +295,6 @@ function UnitButton({
     >
       {children}
     </button>
-  );
-}
-
-function Stat({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
-  return (
-    <div className="rounded-lg border border-border p-4">
-      <div className="text-xs uppercase tracking-widest text-muted-foreground">{label}</div>
-      <div className="text-2xl font-semibold tracking-tight num mt-1">
-        {value}
-        {suffix && <span className="text-sm text-muted-foreground ml-1">{suffix}</span>}
-      </div>
-    </div>
   );
 }
 

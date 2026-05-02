@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
+import { StatRing } from '@/components/stat-ring';
 import { logMeal, upsertFood } from '@/lib/db/repo';
 
 function pickDefaultMeal(): MealLog['meal'] {
@@ -79,11 +80,11 @@ export function FoodDetailForm({
         {food.brand && <p className="text-sm text-muted-foreground">{food.brand}</p>}
       </div>
 
-      <div className="rounded-2xl border border-border p-4 grid grid-cols-4 gap-2 text-center">
-        <Stat label="kcal" value={Math.round(kcal)} />
-        <Stat label="P" value={Math.round(p)} />
-        <Stat label="C" value={Math.round(c)} />
-        <Stat label="F" value={Math.round(f)} />
+      <div className="rounded-2xl border border-border p-4 grid grid-cols-4 gap-2 place-items-center">
+        <StatRing label="kcal" value={Math.round(kcal)} size={68} weight="thin" />
+        <StatRing label="Protein" value={Math.round(p)} sub="g" size={68} weight="thin" />
+        <StatRing label="Carbs" value={Math.round(c)} sub="g" size={68} weight="thin" />
+        <StatRing label="Fat" value={Math.round(f)} sub="g" size={68} weight="thin" />
       </div>
 
       <div className="space-y-3">
@@ -145,11 +146,3 @@ export function FoodDetailForm({
   );
 }
 
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <div>
-      <div className="text-xs uppercase tracking-widest text-muted-foreground">{label}</div>
-      <div className="text-lg font-semibold num">{value.toLocaleString()}</div>
-    </div>
-  );
-}

@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { motion, useReducedMotion, type Variants } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -10,13 +13,36 @@ export default function Home() {
 
 function Marketing() {
   const t = useTranslations('marketing');
+  const reduce = useReducedMotion();
+
+  const fadeUp: Variants = {
+    hidden: { opacity: 0, y: reduce ? 0 : 14 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
+    },
+  };
+
+  const stagger: Variants = {
+    hidden: {},
+    show: {
+      transition: { staggerChildren: reduce ? 0 : 0.07, delayChildren: 0.1 },
+    },
+  };
+
   return (
-    <div className="min-h-screen bg-paper dark:bg-graphite">
-      <header className="mx-auto max-w-5xl flex items-center justify-between px-6 py-6">
+    <div className="min-h-screen">
+      <motion.header
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
+        className="mx-auto max-w-5xl flex items-center justify-between px-6 py-6"
+      >
         <Link href="/" aria-label="Soma">
           <SomaMark size={28} />
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <ThemeToggle />
           <Link href="/login">
             <Button size="sm" variant="secondary">
@@ -24,21 +50,26 @@ function Marketing() {
             </Button>
           </Link>
         </div>
-      </header>
+      </motion.header>
 
       <main className="mx-auto max-w-5xl px-6">
-        <section className="py-24 md:py-32 grid md:grid-cols-[1fr_auto] items-center gap-12">
+        <motion.section
+          variants={stagger}
+          initial="hidden"
+          animate="show"
+          className="py-24 md:py-32 grid md:grid-cols-[1fr_auto] items-center gap-12"
+        >
           <div>
-            <p className="label-mono text-muted-foreground mb-5">
+            <motion.p variants={fadeUp} className="label-mono text-muted-foreground mb-5">
               σῶμα · open source · agpl-3.0
-            </p>
-            <h1 className="text-4xl md:text-6xl wordmark tracking-tight max-w-2xl">
+            </motion.p>
+            <motion.h1 variants={fadeUp} className="text-4xl md:text-6xl wordmark tracking-tight max-w-2xl text-balance">
               {t('headline')}
-            </h1>
-            <p className="mt-6 text-lg text-muted-foreground max-w-xl leading-relaxed">
+            </motion.h1>
+            <motion.p variants={fadeUp} className="mt-6 text-lg text-muted-foreground max-w-xl leading-relaxed text-pretty">
               {t('sub')}
-            </p>
-            <div className="mt-10 flex items-center gap-3">
+            </motion.p>
+            <motion.div variants={fadeUp} className="mt-10 flex items-center gap-3">
               <Link href="/app">
                 <Button size="lg">{t('cta_primary')}</Button>
               </Link>
@@ -47,12 +78,16 @@ function Marketing() {
                   {t('cta_secondary')}
                 </Button>
               </Link>
-            </div>
+            </motion.div>
           </div>
-          <div className="hidden md:block">
-            <GraphiteRing size={280} pct={0.75} weight="regular" />
-          </div>
-        </section>
+          <motion.div
+            variants={fadeUp}
+            className="hidden md:block animate-breathe"
+            aria-hidden="true"
+          >
+            <GraphiteRing size={300} pct={0.75} weight="regular" />
+          </motion.div>
+        </motion.section>
 
         <div className="border-y border-border py-5 flex flex-wrap items-center justify-between gap-4 label-mono text-muted-foreground">
           <span>RD9 · GRAPHITE DUOTONE</span>
@@ -60,14 +95,20 @@ function Marketing() {
           <span>RING 75% · REGULAR</span>
         </div>
 
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-20">
-          <Feature title={t('features.privacy_title')} body={t('features.privacy_body')} />
-          <Feature title={t('features.open_title')} body={t('features.open_body')} />
-          <Feature title={t('features.local_title')} body={t('features.local_body')} />
-          <Feature title={t('features.barcode_title')} body={t('features.barcode_body')} />
-          <Feature title={t('features.byok_title')} body={t('features.byok_body')} />
-          <Feature title={t('features.sync_title')} body={t('features.sync_body')} />
-        </section>
+        <motion.section
+          variants={stagger}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: '-80px' }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-20"
+        >
+          <Feature variants={fadeUp} title={t('features.privacy_title')} body={t('features.privacy_body')} />
+          <Feature variants={fadeUp} title={t('features.open_title')} body={t('features.open_body')} />
+          <Feature variants={fadeUp} title={t('features.local_title')} body={t('features.local_body')} />
+          <Feature variants={fadeUp} title={t('features.barcode_title')} body={t('features.barcode_body')} />
+          <Feature variants={fadeUp} title={t('features.byok_title')} body={t('features.byok_body')} />
+          <Feature variants={fadeUp} title={t('features.sync_title')} body={t('features.sync_body')} />
+        </motion.section>
       </main>
 
       <footer className="border-t border-border">
@@ -77,7 +118,11 @@ function Marketing() {
             <Link href="/about" className="hover:text-foreground">About</Link>
             <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
             <Link href="/terms" className="hover:text-foreground">Terms</Link>
-            <a href="https://github.com" className="hover:text-foreground">GitHub</a>
+            {process.env.NEXT_PUBLIC_GITHUB_URL && (
+              <a href={process.env.NEXT_PUBLIC_GITHUB_URL} className="hover:text-foreground">
+                GitHub
+              </a>
+            )}
           </div>
         </div>
       </footer>
@@ -85,11 +130,14 @@ function Marketing() {
   );
 }
 
-function Feature({ title, body }: { title: string; body: string }) {
+function Feature({ title, body, variants }: { title: string; body: string; variants: Variants }) {
   return (
-    <div className="rounded-lg border border-border p-6 bg-surface">
+    <motion.article
+      variants={variants}
+      className="rounded-lg border border-border p-6 bg-surface transition-colors duration-200 hover:bg-muted/10"
+    >
       <h3 className="font-semibold tracking-tight">{title}</h3>
       <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{body}</p>
-    </div>
+    </motion.article>
   );
 }

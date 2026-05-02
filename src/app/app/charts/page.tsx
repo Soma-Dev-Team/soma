@@ -7,8 +7,6 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
-  Pie,
-  PieChart,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -19,6 +17,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { getDB } from '@/lib/db/dexie';
 import { getProfile, listMealsBetween } from '@/lib/db/repo';
 import { format, startOfDay, subDays } from 'date-fns';
+import { StatRing } from '@/components/stat-ring';
 
 export default function ChartsPage() {
   const profile = useLiveQuery(() => getProfile(), []);
@@ -51,22 +50,19 @@ export default function ChartsPage() {
     return days.map((d) => ({ ...d, kcal: Math.round(d.kcal) }));
   }, [recent, foods]);
 
-  const macroPie = useMemo(() => {
-    const out = [
-      { name: 'Protein', value: 0, color: 'hsl(var(--soma-ink))' },
-      { name: 'Carbs', value: 0, color: 'oklch(0.62 0.04 240)' },
-      { name: 'Fat', value: 0, color: 'oklch(0.42 0.05 240)' },
-    ];
-    if (!recent || !foods) return out;
+  const macroSplit = useMemo(() => {
+    const out = { proteinKcal: 0, carbsKcal: 0, fatKcal: 0 };
+    if (!recent || !foods) return { ...out, total: 0 };
     for (const m of recent) {
       const f = foods.get(m.food_id);
       if (!f) continue;
       const factor = m.grams != null && f.serving_size_g ? m.grams / f.serving_size_g : m.servings;
-      out[0].value += (f.protein_g ?? 0) * factor * 4;
-      out[1].value += (f.carbs_g ?? 0) * factor * 4;
-      out[2].value += (f.fat_g ?? 0) * factor * 9;
+      out.proteinKcal += (f.protein_g ?? 0) * factor * 4;
+      out.carbsKcal += (f.carbs_g ?? 0) * factor * 4;
+      out.fatKcal += (f.fat_g ?? 0) * factor * 9;
     }
-    return out.map((s) => ({ ...s, value: Math.round(s.value) }));
+    const total = out.proteinKcal + out.carbsKcal + out.fatKcal;
+    return { ...out, total };
   }, [recent, foods]);
 
   const weeklyAvg = useMemo(() => {
@@ -77,9 +73,43 @@ export default function ChartsPage() {
 
   const target = profile?.target_calories ?? 2000;
 
+  // Adherence: how many of the last 7 days were within ±10% of target
+  const adherence = useMemo(() => {
+    const last7 = dailySeries.slice(-7);
+    const tol = target * 0.1;
+    const onTarget = last7.filter((d) => d.kcal > 0 && Math.abs(d.kcal - target) <= tol).length;
+    return { onTarget, days: 7 };
+  }, [dailySeries, target]);
+
+  const proteinPctOfTotal = macroSplit.total > 0 ? Math.round((macroSplit.proteinKcal / macroSplit.total) * 100) : 0;
+  const carbsPctOfTotal = macroSplit.total > 0 ? Math.round((macroSplit.carbsKcal / macroSplit.total) * 100) : 0;
+  const fatPctOfTotal = macroSplit.total > 0 ? Math.round((macroSplit.fatKcal / macroSplit.total) * 100) : 0;
+
   return (
     <div className="space-y-5">
       <h1 className="text-2xl wordmark">trends</h1>
+
+      <Card>
+        <CardContent className="pt-6 pb-5">
+          <div className="grid grid-cols-2 gap-3 place-items-center">
+            <StatRing
+              label="7-day average"
+              value={weeklyAvg}
+              unit="kcal"
+              target={target}
+              sub={`of ${target.toLocaleString()}`}
+              size={130}
+            />
+            <StatRing
+              label="On target"
+              value={adherence.onTarget}
+              target={adherence.days}
+              sub={`/ ${adherence.days} days`}
+              size={130}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardContent className="pt-5">
@@ -110,51 +140,23 @@ export default function ChartsPage() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <p className="label-mono text-muted-foreground mt-3 num">
-            7-DAY AVERAGE · {weeklyAvg.toLocaleString()} KCAL
-          </p>
         </CardContent>
       </Card>
 
       <Card>
-        <CardContent className="pt-5">
-          <h2 className="font-semibold mb-2">Macro split (kcal, 14 days)</h2>
-          <div className="h-56 flex items-center">
-            <ResponsiveContainer>
-              <PieChart>
-                <Pie
-                  data={macroPie}
-                  dataKey="value"
-                  nameKey="name"
-                  innerRadius={50}
-                  outerRadius={80}
-                  paddingAngle={2}
-                >
-                  {macroPie.map((s, i) => (
-                    <Cell key={i} fill={s.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    background: 'hsl(var(--surface))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: 8,
-                    fontSize: 12,
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+        <CardContent className="pt-6 pb-5">
+          <div className="flex items-baseline justify-between mb-4">
+            <h2 className="font-semibold">Macro split</h2>
+            <span className="label-mono text-muted-foreground">14 DAYS · KCAL %</span>
           </div>
-          <div className="flex justify-center gap-5 mt-2 text-xs">
-            {macroPie.map((s) => (
-              <div key={s.name} className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-sm" style={{ background: s.color }} />
-                <span>
-                  {s.name} <span className="num text-muted-foreground">{s.value}</span>
-                </span>
-              </div>
-            ))}
+          <div className="grid grid-cols-3 gap-3 place-items-center">
+            <StatRing label="Protein" value={proteinPctOfTotal} unit="%" target={100} sub="%" size={104} />
+            <StatRing label="Carbs" value={carbsPctOfTotal} unit="%" target={100} sub="%" size={104} />
+            <StatRing label="Fat" value={fatPctOfTotal} unit="%" target={100} sub="%" size={104} />
           </div>
+          <p className="label-mono text-muted-foreground text-center mt-4 num">
+            {Math.round(macroSplit.total).toLocaleString()} KCAL TOTAL
+          </p>
         </CardContent>
       </Card>
     </div>

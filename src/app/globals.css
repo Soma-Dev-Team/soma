@@ -3,56 +3,135 @@
 @tailwind utilities;
 
 /*
- * Soma — RD9 Graphite Duotone tokens
- * ink #18201C · paper #F4F0EA · dark #171A1F · midnight #0E1722 · sand #E4DCCD
- * slate oklch(0.62 0.04 240) · slate-deep oklch(0.42 0.05 240)
+ * Soma — RD9 Graphite Duotone, six approved palettes.
+ * Defined in Design/CLAUDE.md. Each palette is a complete theme.
+ *
+ *  light   paper #F4F0EA · slate-deep → ink ring · ink text · primary light
+ *  sand    sand  #E4DCCD · slate-deep → ink ring · ink text
+ *  dark    dark  #171A1F · slate → paper ring · paper text · primary dark
+ *  mid     mid   #0E1722 · slate → paper ring · paper text
+ *  deep    slate-deep ground · paper → slate ring · paper text
+ *  slate   slate ground     · paper → ink ring · paper text
  */
 
 @layer base {
   :root {
-    --soma-ink: 153 14% 11%;          /* #18201C */
-    --soma-paper: 38 27% 94%;         /* #F4F0EA */
-    --soma-dark: 220 11% 11%;         /* #171A1F */
-    --soma-midnight: 213 43% 9%;      /* #0E1722 */
-    --soma-sand: 38 28% 85%;          /* #E4DCCD */
+    /* RD9 raw tokens (always available) */
+    --soma-ink: 153 14% 11%;        /* #18201C */
+    --soma-paper: 38 27% 94%;       /* #F4F0EA */
+    --soma-dark: 220 11% 11%;       /* #171A1F */
+    --soma-midnight: 213 43% 9%;    /* #0E1722 */
+    --soma-sand: 38 28% 85%;        /* #E4DCCD */
+    --soma-slate: 220 12% 60%;
+    --soma-slate-deep: 220 14% 40%;
 
-    --soma-slate: oklch(0.62 0.04 240);
-    --soma-slate-deep: oklch(0.42 0.05 240);
-
-    --background: var(--soma-paper);
-    --foreground: var(--soma-ink);
-    --surface: 38 35% 96%;            /* slightly lighter than paper for cards */
-    --muted: 153 14% 11% / 0.55;
-    --muted-foreground: 153 14% 11% / 0.7;
-    --accent: var(--soma-ink);
-    --accent-foreground: var(--soma-paper);
-    --border: 153 14% 11% / 0.12;
-    --ring: 153 14% 11% / 0.4;
-    --destructive: 0 60% 38%;
-    --destructive-foreground: var(--soma-paper);
+    /* shared */
     --radius: 1rem;
-
-    --ring-from: var(--soma-slate-deep);
-    --ring-to: oklch(0.18 0.01 153);   /* near-ink endpoint of gradient */
-    --ring-track: 153 14% 11% / 0.08;
+    --destructive: 0 60% 38%;
+    --destructive-foreground: 38 27% 94%;
   }
 
+  /* ────────── light · paper ground · primary light ────────── */
+  :root,
+  .light {
+    --background: var(--soma-paper);
+    --foreground: var(--soma-ink);
+    --surface: 38 35% 96%;
+    --muted: 153 14% 11% / 0.55;
+    --muted-foreground: 153 14% 11% / 0.7;
+    --border: 153 14% 11% / 0.12;
+    --ring: 153 14% 11% / 0.4;
+    --accent: var(--soma-ink);
+    --accent-foreground: var(--soma-paper);
+
+    --ring-from: hsl(var(--soma-slate-deep));
+    --ring-to: hsl(var(--soma-ink));
+    --ring-track: hsl(var(--soma-ink) / 0.08);
+  }
+
+  /* ────────── sand · warm light variant ────────── */
+  .sand {
+    --background: var(--soma-sand);
+    --foreground: var(--soma-ink);
+    --surface: 38 32% 90%;
+    --muted: 153 14% 11% / 0.55;
+    --muted-foreground: 153 14% 11% / 0.7;
+    --border: 153 14% 11% / 0.14;
+    --ring: 153 14% 11% / 0.4;
+    --accent: var(--soma-ink);
+    --accent-foreground: var(--soma-paper);
+
+    --ring-from: hsl(var(--soma-slate-deep));
+    --ring-to: hsl(var(--soma-ink));
+    --ring-track: hsl(var(--soma-ink) / 0.1);
+  }
+
+  /* ────────── dark · graphite ground · primary dark ────────── */
   .dark {
     --background: var(--soma-dark);
     --foreground: var(--soma-paper);
     --surface: 220 11% 14%;
     --muted: 38 27% 94% / 0.55;
     --muted-foreground: 38 27% 94% / 0.7;
-    --accent: var(--soma-paper);
-    --accent-foreground: var(--soma-ink);
     --border: 38 27% 94% / 0.12;
     --ring: 38 27% 94% / 0.4;
-    --destructive: 0 65% 55%;
-    --destructive-foreground: var(--soma-ink);
+    --accent: var(--soma-paper);
+    --accent-foreground: var(--soma-ink);
 
-    --ring-from: var(--soma-slate);
-    --ring-to: oklch(0.94 0.005 60);  /* paper endpoint of gradient */
-    --ring-track: 38 27% 94% / 0.1;
+    --ring-from: hsl(var(--soma-slate));
+    --ring-to: hsl(var(--soma-paper));
+    --ring-track: hsl(var(--soma-paper) / 0.1);
+  }
+
+  /* ────────── mid · midnight ground ────────── */
+  .mid {
+    --background: var(--soma-midnight);
+    --foreground: var(--soma-paper);
+    --surface: 213 35% 12%;
+    --muted: 38 27% 94% / 0.55;
+    --muted-foreground: 38 27% 94% / 0.72;
+    --border: 38 27% 94% / 0.1;
+    --ring: 38 27% 94% / 0.4;
+    --accent: var(--soma-paper);
+    --accent-foreground: var(--soma-midnight);
+
+    --ring-from: hsl(var(--soma-slate));
+    --ring-to: hsl(var(--soma-paper));
+    --ring-track: hsl(var(--soma-paper) / 0.1);
+  }
+
+  /* ────────── deep · deep slate ground ────────── */
+  .deep {
+    --background: var(--soma-slate-deep);
+    --foreground: var(--soma-paper);
+    --surface: 220 14% 32%;
+    --muted: 38 27% 94% / 0.6;
+    --muted-foreground: 38 27% 94% / 0.78;
+    --border: 38 27% 94% / 0.18;
+    --ring: 38 27% 94% / 0.4;
+    --accent: var(--soma-paper);
+    --accent-foreground: 220 14% 28%;
+
+    --ring-from: hsl(var(--soma-paper));
+    --ring-to: hsl(var(--soma-slate));
+    --ring-track: hsl(var(--soma-paper) / 0.15);
+  }
+
+  /* ────────── slate · slate ground ────────── */
+  .slate {
+    --background: var(--soma-slate);
+    --foreground: var(--soma-paper);
+    --surface: 220 14% 52%;
+    --muted: 38 27% 94% / 0.65;
+    --muted-foreground: 38 27% 94% / 0.85;
+    --border: 38 27% 94% / 0.2;
+    --ring: 38 27% 94% / 0.5;
+    --accent: var(--soma-paper);
+    --accent-foreground: 220 14% 30%;
+
+    --ring-from: hsl(var(--soma-paper));
+    --ring-to: hsl(var(--soma-ink));
+    --ring-track: hsl(var(--soma-paper) / 0.2);
   }
 
   * {
@@ -92,4 +171,15 @@
   .bg-sand { background-color: hsl(var(--soma-sand)); }
   .text-ink { color: hsl(var(--soma-ink)); }
   .text-paper { color: hsl(var(--soma-paper)); }
+
+  @keyframes breathe {
+    0%, 100% { opacity: 0.85; transform: scale(1); }
+    50%       { opacity: 1;    transform: scale(1.03); }
+  }
+  .animate-breathe {
+    animation: breathe 3.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-breathe { animation: none; }
+  }
 }

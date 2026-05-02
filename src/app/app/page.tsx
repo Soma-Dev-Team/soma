@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Plus } from 'lucide-react';
 import { CalorieRing } from '@/components/calorie-ring';
-import { MacroBars } from '@/components/macro-bars';
+import { MacroRings } from '@/components/macro-rings';
 import { MealList } from '@/components/meal-list';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -60,8 +60,8 @@ export default function TodayPage() {
       </div>
 
       <Card>
-        <CardContent className="pt-5">
-          <MacroBars consumed={totals} targets={targets} />
+        <CardContent className="pt-6 pb-5">
+          <MacroRings consumed={totals} targets={targets} />
         </CardContent>
       </Card>
 

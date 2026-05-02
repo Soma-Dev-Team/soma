@@ -18,7 +18,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { deleteWeight, getProfile, listWeights, logWeight } from '@/lib/db/repo';
 import { kgToLbs, lbsToKg } from '@/lib/utils';
 import { Trash2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
+import { StatRing } from '@/components/stat-ring';
 
 type Range = '7' | '30' | 'all';
 
@@ -29,6 +30,26 @@ export default function WeightPage() {
   const isImperial = profile?.units === 'imperial';
   const [input, setInput] = useState('');
   const [range, setRange] = useState<Range>('30');
+
+  const summary = useMemo(() => {
+    if (!weights || weights.length === 0) return null;
+    const sorted = [...weights].sort(
+      (a, b) => new Date(a.logged_at).getTime() - new Date(b.logged_at).getTime(),
+    );
+    const latest = sorted[sorted.length - 1];
+    const sevenAgo = subDays(new Date(), 7).getTime();
+    const last7 = sorted.filter((w) => new Date(w.logged_at).getTime() >= sevenAgo);
+    const avg7 =
+      last7.length > 0 ? last7.reduce((s, w) => s + w.weight_kg, 0) / last7.length : latest.weight_kg;
+    const earliest = sorted[0];
+    const totalDelta = latest.weight_kg - earliest.weight_kg;
+    return {
+      latestKg: latest.weight_kg,
+      avg7Kg: avg7,
+      totalDeltaKg: totalDelta,
+      count: sorted.length,
+    };
+  }, [weights]);
 
   const chartData = useMemo(() => {
     if (!weights) return [];
@@ -59,6 +80,38 @@ export default function WeightPage() {
   return (
     <div className="space-y-5">
       <h1 className="text-2xl wordmark">{t('title').toLowerCase()}</h1>
+
+      {summary && (
+        <Card>
+          <CardContent className="pt-6 pb-5">
+            <div className="grid grid-cols-3 gap-2 place-items-center">
+              <StatRing
+                label="Latest"
+                value={isImperial ? +kgToLbs(summary.latestKg).toFixed(1) : +summary.latestKg.toFixed(1)}
+                sub={isImperial ? 'lb' : 'kg'}
+                size={104}
+              />
+              <StatRing
+                label="7-day avg"
+                value={isImperial ? +kgToLbs(summary.avg7Kg).toFixed(1) : +summary.avg7Kg.toFixed(1)}
+                sub={isImperial ? 'lb' : 'kg'}
+                size={104}
+              />
+              <StatRing
+                label="Since start"
+                value={
+                  (summary.totalDeltaKg > 0 ? '+' : '') +
+                  (isImperial
+                    ? kgToLbs(summary.totalDeltaKg).toFixed(1)
+                    : summary.totalDeltaKg.toFixed(1))
+                }
+                sub={isImperial ? 'lb' : 'kg'}
+                size={104}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardContent className="pt-5">

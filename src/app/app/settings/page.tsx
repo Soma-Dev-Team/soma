@@ -21,6 +21,7 @@ import {
 import { getStoredGeminiKey, setStoredGeminiKey } from '@/lib/gemini';
 import { ExternalLink } from 'lucide-react';
 import type { Integration } from '@/lib/db/dexie';
+import { PalettePicker } from '@/components/palette-picker';
 
 type ProviderId = Integration['provider'];
 
@@ -102,6 +103,16 @@ export default function SettingsPage() {
             No sign-in needed. Your data lives only in this browser. Use Export JSON below to move
             it between devices.
           </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="pt-5 space-y-4">
+          <h2 className="label-mono text-muted-foreground">THEME</h2>
+          <p className="text-xs text-muted-foreground">
+            Six approved RD9 palettes — pick the ground that suits your eye.
+          </p>
+          <PalettePicker />
         </CardContent>
       </Card>
 
