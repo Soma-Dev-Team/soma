@@ -1,10 +1,8 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
-export const alt = 'Soma — Calorie & macro tracking through a clean lens';
-export const size = { width: 1200, height: 630 };
-export const contentType = 'image/png';
 
+const SIZE = { width: 1200, height: 630 };
 const PAPER = '#F4F0EA';
 const INK = '#18201C';
 const SLATE_DEEP = '#5A6680';
