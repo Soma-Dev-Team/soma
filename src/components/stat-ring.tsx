@@ -38,7 +38,11 @@ export function StatRing({
   const isProgress = typeof target === 'number' && target > 0 && typeof value === 'number';
   const numericValue = typeof value === 'number' ? value : NaN;
   const pct = isProgress ? Math.min(1, numericValue / target!) : 1;
-  const isOver = overshoot ?? (isProgress ? numericValue > target! : false);
+  // Only flag red when the caller explicitly opts in. Generic stat rings
+  // (macros, averages, weight, etc.) shouldn't go red just because they
+  // exceed the target — overshoot is only meaningful for calories in
+  // lose/maintain mode, and CalorieRing handles that itself.
+  const isOver = overshoot ?? false;
 
   const valueDisplay =
     typeof value === 'number'

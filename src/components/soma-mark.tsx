@@ -1,3 +1,7 @@
+'use client';
+
+import { motion, useReducedMotion } from 'framer-motion';
+import { useId } from 'react';
 import { cn } from '@/lib/utils';
 
 type RingWeight = 'thin' | 'regular' | 'heavy';
@@ -16,32 +20,32 @@ export interface GraphiteRingProps {
   fromC?: string;
   toC?: string;
   trackC?: string;
+  /** When true, animates the dash from 0 to target on mount + on pct change. */
+  animate?: boolean;
   className?: string;
   ariaLabel?: string;
-}
-
-let _gid = 0;
-function nextGid() {
-  _gid += 1;
-  return `soma-grad-${_gid}`;
 }
 
 export function GraphiteRing({
   size = 220,
   pct = 0.72,
   weight = 'regular',
-  fromC = 'var(--soma-slate-deep)',
-  toC = 'hsl(var(--soma-ink))',
-  trackC = 'hsl(var(--soma-ink) / 0.08)',
+  fromC = 'var(--ring-from, var(--soma-slate-deep))',
+  toC = 'var(--ring-to, hsl(var(--soma-ink)))',
+  trackC = 'var(--ring-track, hsl(var(--soma-ink) / 0.08))',
+  animate = true,
   className,
   ariaLabel,
 }: GraphiteRingProps) {
+  const reduce = useReducedMotion();
+  const gid = useId();
   const { sw, r } = ringDimsFor(size, weight);
   const cx = size / 2;
   const cy = size / 2;
   const C = 2 * Math.PI * r;
-  const gid = nextGid();
   const dash = `${C * Math.max(0, Math.min(1, pct))} ${C}`;
+  const shouldAnimate = animate && !reduce;
+
   return (
     <svg
       width={size}
@@ -58,7 +62,7 @@ export function GraphiteRing({
         </linearGradient>
       </defs>
       <circle cx={cx} cy={cy} r={r} fill="none" stroke={trackC} strokeWidth={sw} />
-      <circle
+      <motion.circle
         cx={cx}
         cy={cy}
         r={r}
@@ -66,8 +70,10 @@ export function GraphiteRing({
         stroke={`url(#${gid})`}
         strokeWidth={sw}
         strokeLinecap="round"
-        strokeDasharray={dash}
         transform={`rotate(-90 ${cx} ${cy})`}
+        initial={shouldAnimate ? { strokeDasharray: `0 ${C}` } : false}
+        animate={{ strokeDasharray: dash }}
+        transition={{ duration: shouldAnimate ? 1.0 : 0, ease: [0.16, 1, 0.3, 1], delay: shouldAnimate ? 0.08 : 0 }}
       />
     </svg>
   );
@@ -87,7 +93,7 @@ export function SomaMark({
   const wordSize = Math.round(size * 0.85);
   return (
     <span className={cn('inline-flex items-center', className)} style={{ gap: Math.max(6, size * 0.18) }}>
-      <GraphiteRing size={size} pct={pct} weight="regular" ariaLabel="Soma" />
+      <GraphiteRing size={size} pct={pct} weight="regular" ariaLabel="Soma" animate={false} />
       {showWordmark && (
         <span className="wordmark" style={{ fontSize: wordSize, color: 'hsl(var(--foreground))' }}>
           soma

@@ -6,6 +6,7 @@ import type { Food } from '@/lib/db/dexie';
 import { Input } from '@/components/ui/input';
 import { recentFoods } from '@/lib/db/repo';
 import { useEnergyLabel } from '@/lib/hooks';
+import { LoadingRow } from './loading-ring';
 
 export function FoodSearch({ onPick }: { onPick: (food: Food) => void }) {
   const t = useTranslations('add_food');
@@ -62,7 +63,7 @@ export function FoodSearch({ onPick }: { onPick: (food: Food) => void }) {
       {!q.trim() && recent.length > 0 && (
         <p className="text-xs uppercase tracking-widest text-muted-foreground">{t('recent')}</p>
       )}
-      {loading && <p className="text-sm text-muted-foreground">…</p>}
+      {loading && <LoadingRow label="Searching…" />}
       {!loading && list.length === 0 && q.trim() && (
         <p className="text-sm text-muted-foreground">{t('no_results')}</p>
       )}

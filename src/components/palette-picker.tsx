@@ -118,6 +118,7 @@ export function PalettePicker() {
                 fromC={s.fromC}
                 toC={s.toC}
                 trackC={s.trackC}
+                animate={false}
               />
             </span>
             <span className="label-mono text-muted-foreground text-[10px]">{s.name}</span>

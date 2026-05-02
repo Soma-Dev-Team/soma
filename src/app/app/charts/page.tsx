@@ -74,6 +74,7 @@ export default function ChartsPage() {
   }, [dailySeries]);
 
   const target = profile?.target_calories ?? 2000;
+  const isGain = profile?.goal === 'gain';
 
   // Adherence: how many of the last 7 days were within ±10% of target
   const adherence = useMemo(() => {
@@ -136,7 +137,14 @@ export default function ChartsPage() {
                 <ReferenceLine y={target} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
                 <Bar dataKey="kcal" radius={[4, 4, 0, 0]}>
                   {dailySeries.map((d, i) => (
-                    <Cell key={i} fill={d.kcal > target ? 'hsl(var(--destructive))' : 'hsl(var(--foreground))'} />
+                    <Cell
+                      key={i}
+                      fill={
+                        d.kcal > target && !isGain
+                          ? 'hsl(var(--destructive))'
+                          : 'hsl(var(--foreground))'
+                      }
+                    />
                   ))}
                 </Bar>
               </BarChart>

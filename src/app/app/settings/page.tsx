@@ -212,7 +212,7 @@ export default function SettingsPage() {
       </Card>
 
       <p className="label-mono text-muted-foreground text-center pt-4">
-        SOMA · AGPL-3.0 · v0.1
+        SOMA · AGPL-3.0 · BETA v0.0.4
       </p>
     </div>
   );

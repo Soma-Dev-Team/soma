@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLiveQuery } from 'dexie-react-hooks';
+import { motion, useAnimationControls, useReducedMotion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { CalorieRing, type GoalMode } from '@/components/calorie-ring';
 import { MacroRings } from '@/components/macro-rings';
@@ -25,10 +26,19 @@ export default function TodayPage() {
     return new Map(all.map((f) => [f.id, f]));
   }, [meals]);
 
+  // useLiveQuery returns `undefined` both while loading and when no row exists,
+  // so the redirect needs a separate one-shot check at mount.
   useEffect(() => {
-    if (profile === undefined) return;
-    if (!profile?.onboarded) router.replace('/app/onboarding');
-  }, [profile, router]);
+    let cancelled = false;
+    (async () => {
+      const p = await getProfile();
+      if (cancelled) return;
+      if (!p?.onboarded) router.replace('/app/onboarding');
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
 
   const totals = useMemo(() => {
     const t = { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0, fiber_g: 0 };
@@ -47,6 +57,23 @@ export default function TodayPage() {
   }, [meals, foods]);
 
   const goal = profile?.target_calories ?? 2000;
+
+  // Pulse the calorie ring whenever the meal count grows.
+  const reduce = useReducedMotion();
+  const controls = useAnimationControls();
+  const lastMealCount = useRef<number | null>(null);
+  useEffect(() => {
+    if (!meals) return;
+    const prev = lastMealCount.current;
+    lastMealCount.current = meals.length;
+    if (prev == null) return; // first observation, don't pulse on mount
+    if (meals.length > prev && !reduce) {
+      controls.start({
+        scale: [1, 1.04, 1],
+        transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
+      });
+    }
+  }, [meals?.length, controls, reduce]);
   const targets = {
     protein_g: profile?.target_protein_g ?? 150,
     carbs_g: profile?.target_carbs_g ?? 200,
@@ -56,14 +83,14 @@ export default function TodayPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-center pt-2">
+      <motion.div animate={controls} className="flex items-center justify-center pt-2">
         <CalorieRing
           consumed={totals.kcal}
           goal={goal}
           mode={(profile?.goal as GoalMode | undefined) ?? 'maintain'}
           unitLabel={calorieLabel(profile?.units)}
         />
-      </div>
+      </motion.div>
 
       <Card>
         <CardContent className="pt-6 pb-5">

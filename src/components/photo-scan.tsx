@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Camera, Loader2 } from 'lucide-react';
+import { Camera } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { LoadingRing } from './loading-ring';
 import { fileToBase64, geminiScan, getStoredGeminiKey, type GeminiFoodItem } from '@/lib/gemini';
 import { logMeal, upsertFood } from '@/lib/db/repo';
 import { useEnergyLabel } from '@/lib/hooks';
@@ -164,8 +165,8 @@ export function PhotoScan({ defaultMeal, onLogged }: { defaultMeal?: MealLog['me
         />
         <div className="rounded-2xl border-2 border-dashed border-border p-8 text-center cursor-pointer hover:bg-muted/5">
           {busy ? (
-            <div className="flex items-center justify-center gap-2 text-muted-foreground">
-              <Loader2 className="animate-spin" size={20} /> Analyzing…
+            <div className="flex items-center justify-center gap-3 text-muted-foreground">
+              <LoadingRing size={20} /> <span>Analyzing…</span>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2 text-muted-foreground">
