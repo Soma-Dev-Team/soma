@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { StatRing } from '@/components/stat-ring';
 import { logMeal, upsertFood } from '@/lib/db/repo';
+import { useEnergyLabel } from '@/lib/hooks';
 
 function pickDefaultMeal(): MealLog['meal'] {
   const h = new Date().getHours();
@@ -30,6 +31,7 @@ export function FoodDetailForm({
   onCancel: () => void;
 }) {
   const t = useTranslations('add_food');
+  const energyLabel = useEnergyLabel();
   const [meal, setMeal] = useState<MealLog['meal']>(defaultMeal ?? pickDefaultMeal());
   const [mode, setMode] = useState<'servings' | 'grams'>(food.serving_size_g ? 'servings' : 'grams');
   const [servings, setServings] = useState(1);
@@ -81,7 +83,7 @@ export function FoodDetailForm({
       </div>
 
       <div className="rounded-2xl border border-border p-4 grid grid-cols-4 gap-2 place-items-center">
-        <StatRing label="kcal" value={Math.round(kcal)} size={68} weight="thin" />
+        <StatRing label={energyLabel} value={Math.round(kcal)} size={68} weight="thin" />
         <StatRing label="Protein" value={Math.round(p)} sub="g" size={68} weight="thin" />
         <StatRing label="Carbs" value={Math.round(c)} sub="g" size={68} weight="thin" />
         <StatRing label="Fat" value={Math.round(f)} sub="g" size={68} weight="thin" />

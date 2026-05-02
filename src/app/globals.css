@@ -70,34 +70,35 @@
   .dark {
     --background: var(--soma-dark);
     --foreground: var(--soma-paper);
-    --surface: 220 11% 14%;
-    --muted: 38 27% 94% / 0.55;
-    --muted-foreground: 38 27% 94% / 0.7;
-    --border: 38 27% 94% / 0.12;
-    --ring: 38 27% 94% / 0.4;
+    --surface: 220 11% 18%;
+    --muted: 38 27% 94% / 0.6;
+    --muted-foreground: 38 27% 94% / 0.78;
+    --border: 38 27% 94% / 0.18;
+    --ring: 38 27% 94% / 0.5;
     --accent: var(--soma-paper);
     --accent-foreground: var(--soma-ink);
 
-    --ring-from: hsl(var(--soma-slate));
+    /* Brighter slate start so the ring reads at small wordmark sizes */
+    --ring-from: 220 18% 70%;
     --ring-to: hsl(var(--soma-paper));
-    --ring-track: hsl(var(--soma-paper) / 0.1);
+    --ring-track: hsl(var(--soma-paper) / 0.18);
   }
 
   /* ────────── mid · midnight ground ────────── */
   .mid {
     --background: var(--soma-midnight);
     --foreground: var(--soma-paper);
-    --surface: 213 35% 12%;
-    --muted: 38 27% 94% / 0.55;
-    --muted-foreground: 38 27% 94% / 0.72;
-    --border: 38 27% 94% / 0.1;
-    --ring: 38 27% 94% / 0.4;
+    --surface: 213 35% 15%;
+    --muted: 38 27% 94% / 0.6;
+    --muted-foreground: 38 27% 94% / 0.78;
+    --border: 38 27% 94% / 0.16;
+    --ring: 38 27% 94% / 0.5;
     --accent: var(--soma-paper);
     --accent-foreground: var(--soma-midnight);
 
-    --ring-from: hsl(var(--soma-slate));
+    --ring-from: 220 18% 72%;
     --ring-to: hsl(var(--soma-paper));
-    --ring-track: hsl(var(--soma-paper) / 0.1);
+    --ring-track: hsl(var(--soma-paper) / 0.18);
   }
 
   /* ────────── deep · deep slate ground ────────── */

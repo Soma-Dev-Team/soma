@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import type { Food, MealLog } from '@/lib/db/dexie';
 import { Trash2 } from 'lucide-react';
 import { Button } from './ui/button';
+import { useEnergyLabel } from '@/lib/hooks';
 
 type Meal = MealLog['meal'];
 
@@ -31,6 +32,7 @@ export function MealList({
   onDelete?: (id: string) => void;
 }) {
   const t = useTranslations('today');
+  const energyLabel = useEnergyLabel();
   const groups: Record<Meal, MealLog[]> = {
     breakfast: [],
     lunch: [],
@@ -48,7 +50,7 @@ export function MealList({
           <div key={meal} className="rounded-2xl border border-border bg-surface">
             <div className="flex items-center justify-between px-5 py-3 border-b border-border">
               <div className="font-medium">{t(meal)}</div>
-              <div className="text-sm text-muted-foreground num">{Math.round(total)} kcal</div>
+              <div className="text-sm text-muted-foreground num">{Math.round(total)} {energyLabel}</div>
             </div>
             {items.length === 0 ? (
               <div className="px-5 py-4 text-sm text-muted-foreground flex items-center justify-between">

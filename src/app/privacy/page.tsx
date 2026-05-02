@@ -9,18 +9,56 @@ export default function PrivacyPage() {
         <Link href="/">← BACK</Link>
       </p>
       <h1 className="text-4xl wordmark">privacy</h1>
-      <p>This is a placeholder privacy policy. Replace before launch.</p>
-      <h2 className="text-lg font-semibold mt-6">What we store</h2>
-      <p>Your nutrition logs, weight, and profile are stored locally in your browser (IndexedDB).</p>
-      <p>If you sign in, the same data syncs to Supabase (EU region) under your account.</p>
-      <h2 className="text-lg font-semibold mt-6">Photos</h2>
+
       <p>
-        Photos used for AI scanning are sent to Google Gemini using your own API key. They are not
-        written to disk or to Soma's storage. The user is the data controller for any data sent via the
-        Gemini API.
+        Soma is built local-first. The short version: there's no Soma account, no Soma server that
+        stores your data, and no analytics that follow you between visits. The longer version is
+        below.
       </p>
-      <h2 className="text-lg font-semibold mt-6">Your rights</h2>
-      <p>You can export everything as JSON or delete your account from Settings → Your data.</p>
+
+      <h2 className="text-lg font-semibold mt-8">What stays on your device</h2>
+      <p>
+        Your profile, weight log, food log, custom foods, barcode cache, theme choice, and Gemini
+        API key all live in your browser via IndexedDB and localStorage. They never leave the
+        device unless you explicitly use Settings → Export JSON.
+      </p>
+
+      <h2 className="text-lg font-semibold mt-8">What gets sent over the network</h2>
+      <ul className="space-y-2 list-disc list-inside marker:text-muted-foreground">
+        <li>
+          <strong>Open Food Facts &amp; USDA FoodData Central:</strong> when you search for a food
+          or scan a barcode, we send the search term or the barcode number to those public APIs to
+          look it up. Nothing else is attached.
+        </li>
+        <li>
+          <strong>Google Gemini (AI photo scan):</strong> the image you choose is uploaded once,
+          using your own API key. Soma does not see the image, does not store it, and does not
+          proxy the request. Google's policies for the API apply.
+        </li>
+        <li>
+          <strong>Strava / Garmin / Withings:</strong> only if you connect them in Settings. The
+          OAuth tokens are stored in your browser via IndexedDB.
+        </li>
+      </ul>
+
+      <h2 className="text-lg font-semibold mt-8">What we don't do</h2>
+      <ul className="space-y-2 list-disc list-inside marker:text-muted-foreground">
+        <li>No Soma account, so nothing tied to an email or identity.</li>
+        <li>No food photos persisted anywhere by Soma.</li>
+        <li>No selling, sharing, or aggregating user data — it's not in our database because we don't have one.</li>
+        <li>No third-party trackers or fingerprinting.</li>
+      </ul>
+
+      <h2 className="text-lg font-semibold mt-8">Your rights</h2>
+      <p>
+        Export everything as JSON or wipe it from Settings. Because the data lives on your device,
+        the controls for "delete my data" are yours directly — no support ticket required.
+      </p>
+
+      <p className="text-sm text-muted-foreground pt-4">
+        If you self-host Soma or fork it, this policy describes the upstream behavior; your fork
+        can change it. The source is auditable on GitHub.
+      </p>
     </div>
   );
 }

@@ -20,7 +20,7 @@ import {
   type Pace,
   type Sex,
 } from '@/lib/tdee';
-import { kgToLbs, lbsToKg, inchesToCm } from '@/lib/utils';
+import { kgToLbs, lbsToKg, inchesToCm, calorieLabel, paceLabel } from '@/lib/utils';
 import { GraphiteRing } from '@/components/soma-mark';
 import { StatRing } from '@/components/stat-ring';
 
@@ -195,11 +195,14 @@ export default function OnboardingPage() {
               </div>
               {d.goal !== 'maintain' && (
                 <div className="space-y-2 pt-2">
-                  {(['mild', 'moderate', 'aggressive'] as const).map((p) => (
-                    <UnitButton key={p} block active={d.pace === p} onClick={() => update({ pace: p })}>
-                      {t(`pace_${p}`)}
-                    </UnitButton>
-                  ))}
+                  {(['mild', 'moderate', 'aggressive'] as const).map((p) => {
+                    const name = p.charAt(0).toUpperCase() + p.slice(1);
+                    return (
+                      <UnitButton key={p} block active={d.pace === p} onClick={() => update({ pace: p })}>
+                        {name} — {paceLabel(p, d.units)}
+                      </UnitButton>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -220,13 +223,19 @@ export default function OnboardingPage() {
             <div className="space-y-6">
               <h2 className="text-xl font-semibold">{t('targets_title')}</h2>
               <div className="grid grid-cols-2 gap-3 place-items-center">
-                <StatRing label={t('tdee')} value={Math.round(total)} unit="kcal" sub="kcal" size={120} />
+                <StatRing
+                  label={t('tdee')}
+                  value={Math.round(total)}
+                  unit={calorieLabel(d.units)}
+                  sub={calorieLabel(d.units)}
+                  size={120}
+                />
                 <StatRing
                   label={t('target_calories')}
                   value={target}
-                  unit="kcal"
+                  unit={calorieLabel(d.units)}
                   target={Math.round(total)}
-                  sub="kcal"
+                  sub={calorieLabel(d.units)}
                   size={120}
                 />
               </div>

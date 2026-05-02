@@ -44,6 +44,27 @@ export function endOfDay(d: Date) {
   return x;
 }
 
+export function calorieLabel(units: 'metric' | 'imperial' | undefined): string {
+  return units === 'imperial' ? 'cal' : 'kcal';
+}
+
+/**
+ * Display the weight delta a pace setting represents per week, in the user's
+ * preferred units. Pace is named in metric internally; we convert to lb for
+ * imperial readers (rounded to nice numbers).
+ */
+export function paceLabel(
+  pace: 'mild' | 'moderate' | 'aggressive',
+  units: 'metric' | 'imperial' | undefined,
+): string {
+  const kg = pace === 'mild' ? 0.25 : pace === 'moderate' ? 0.5 : 0.75;
+  if (units === 'imperial') {
+    const lb = pace === 'mild' ? 0.5 : pace === 'moderate' ? 1 : 1.5;
+    return `${lb} lb/wk`;
+  }
+  return `${kg} kg/wk`;
+}
+
 export function uuid() {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
     return crypto.randomUUID();

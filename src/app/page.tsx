@@ -63,7 +63,11 @@ function Marketing() {
             <motion.p variants={fadeUp} className="label-mono text-muted-foreground mb-5">
               σῶμα · open source · agpl-3.0
             </motion.p>
-            <motion.h1 variants={fadeUp} className="text-4xl md:text-6xl wordmark tracking-tight max-w-2xl text-balance">
+            <motion.h1
+              variants={fadeUp}
+              className="text-4xl md:text-6xl wordmark max-w-xl text-balance"
+              style={{ lineHeight: 1.05 }}
+            >
               {t('headline')}
             </motion.h1>
             <motion.p variants={fadeUp} className="mt-6 text-lg text-muted-foreground max-w-xl leading-relaxed text-pretty">

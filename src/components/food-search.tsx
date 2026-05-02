@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import type { Food } from '@/lib/db/dexie';
 import { Input } from '@/components/ui/input';
 import { recentFoods } from '@/lib/db/repo';
+import { useEnergyLabel } from '@/lib/hooks';
 
 export function FoodSearch({ onPick }: { onPick: (food: Food) => void }) {
   const t = useTranslations('add_food');
@@ -12,6 +13,7 @@ export function FoodSearch({ onPick }: { onPick: (food: Food) => void }) {
   const [results, setResults] = useState<Food[]>([]);
   const [recent, setRecent] = useState<Food[]>([]);
   const [loading, setLoading] = useState(false);
+  const energyLabel = useEnergyLabel();
 
   useEffect(() => {
     recentFoods().then(setRecent);
@@ -75,7 +77,7 @@ export function FoodSearch({ onPick }: { onPick: (food: Food) => void }) {
               <div className="font-medium">{f.name}</div>
               <div className="text-xs text-muted-foreground num">
                 {f.brand ? `${f.brand} · ` : ''}
-                {f.calories != null ? `${Math.round(f.calories)} kcal` : ''}
+                {f.calories != null ? `${Math.round(f.calories)} ${energyLabel}` : ''}
                 {f.serving_size_g ? ` per ${f.serving_size_g} g` : ' / 100g'}
               </div>
             </button>

@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Plus } from 'lucide-react';
-import { CalorieRing } from '@/components/calorie-ring';
+import { CalorieRing, type GoalMode } from '@/components/calorie-ring';
 import { MacroRings } from '@/components/macro-rings';
 import { MealList } from '@/components/meal-list';
+import { calorieLabel } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { getDB } from '@/lib/db/dexie';
@@ -56,7 +57,12 @@ export default function TodayPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-center pt-2">
-        <CalorieRing consumed={totals.kcal} goal={goal} />
+        <CalorieRing
+          consumed={totals.kcal}
+          goal={goal}
+          mode={(profile?.goal as GoalMode | undefined) ?? 'maintain'}
+          unitLabel={calorieLabel(profile?.units)}
+        />
       </div>
 
       <Card>

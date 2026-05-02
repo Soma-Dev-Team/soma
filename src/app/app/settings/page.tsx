@@ -109,9 +109,6 @@ export default function SettingsPage() {
       <Card>
         <CardContent className="pt-5 space-y-4">
           <h2 className="label-mono text-muted-foreground">THEME</h2>
-          <p className="text-xs text-muted-foreground">
-            Six approved RD9 palettes — pick the ground that suits your eye.
-          </p>
           <PalettePicker />
         </CardContent>
       </Card>

@@ -8,6 +8,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { fileToBase64, geminiScan, getStoredGeminiKey, type GeminiFoodItem } from '@/lib/gemini';
 import { logMeal, upsertFood } from '@/lib/db/repo';
+import { useEnergyLabel } from '@/lib/hooks';
 import { uuid } from '@/lib/utils';
 import type { MealLog } from '@/lib/db/dexie';
 
@@ -17,6 +18,7 @@ export function PhotoScan({ defaultMeal, onLogged }: { defaultMeal?: MealLog['me
   const [error, setError] = useState<string | null>(null);
   const [items, setItems] = useState<GeminiFoodItem[] | null>(null);
   const [meal, setMeal] = useState<MealLog['meal']>(defaultMeal ?? 'snack');
+  const energyLabel = useEnergyLabel();
 
   useEffect(() => {
     setApiKey(getStoredGeminiKey());
@@ -92,7 +94,7 @@ export function PhotoScan({ defaultMeal, onLogged }: { defaultMeal?: MealLog['me
               <div className="flex justify-between items-baseline">
                 <span className="font-medium">{it.name}</span>
                 <span className="text-xs num text-muted-foreground">
-                  {it.grams ?? '?'} g · {Math.round(it.calories ?? 0)} kcal
+                  {it.grams ?? '?'} g · {Math.round(it.calories ?? 0)} {energyLabel}
                 </span>
               </div>
               <Input

@@ -18,9 +18,11 @@ import { getDB } from '@/lib/db/dexie';
 import { getProfile, listMealsBetween } from '@/lib/db/repo';
 import { format, startOfDay, subDays } from 'date-fns';
 import { StatRing } from '@/components/stat-ring';
+import { useEnergyLabel } from '@/lib/hooks';
 
 export default function ChartsPage() {
   const profile = useLiveQuery(() => getProfile(), []);
+  const energyLabel = useEnergyLabel();
   const recent = useLiveQuery(async () => {
     const end = new Date();
     const start = subDays(startOfDay(end), 13);
@@ -95,7 +97,7 @@ export default function ChartsPage() {
             <StatRing
               label="7-day average"
               value={weeklyAvg}
-              unit="kcal"
+              unit={energyLabel}
               target={target}
               sub={`of ${target.toLocaleString()}`}
               size={130}
@@ -155,7 +157,7 @@ export default function ChartsPage() {
             <StatRing label="Fat" value={fatPctOfTotal} unit="%" target={100} sub="%" size={104} />
           </div>
           <p className="label-mono text-muted-foreground text-center mt-4 num">
-            {Math.round(macroSplit.total).toLocaleString()} KCAL TOTAL
+            {Math.round(macroSplit.total).toLocaleString()} {energyLabel.toUpperCase()} TOTAL
           </p>
         </CardContent>
       </Card>

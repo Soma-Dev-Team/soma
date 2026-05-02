@@ -26,16 +26,19 @@ const PROVIDERS: Record<string, ProviderConfig> = {
 
 export async function GET(req: Request, { params }: { params: Promise<{ provider: string }> }) {
   const { provider } = await params;
+  const url = new URL(req.url);
   const cfg = PROVIDERS[provider];
-  if (!cfg) return NextResponse.json({ error: 'Unknown provider' }, { status: 404 });
-  const clientId = process.env[cfg.clientIdEnv];
-  if (!clientId) {
-    return NextResponse.json(
-      { error: `Set ${cfg.clientIdEnv} in environment to enable ${provider}.` },
-      { status: 501 },
+  if (!cfg) {
+    return NextResponse.redirect(
+      new URL(`/app/settings#oauth=${provider}&status=unknown-provider`, url.origin),
     );
   }
-  const url = new URL(req.url);
+  const clientId = process.env[cfg.clientIdEnv];
+  if (!clientId) {
+    return NextResponse.redirect(
+      new URL(`/app/settings#oauth=${provider}&status=missing-keys`, url.origin),
+    );
+  }
   const redirect = `${url.origin}/api/oauth/${provider}/callback`;
   const auth = new URL(cfg.authUrl);
   auth.searchParams.set('client_id', clientId);
