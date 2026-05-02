@@ -105,6 +105,6 @@ export async function GET() {
         </div>
       </div>
     ),
-    size,
+    SIZE,
   );
 }
