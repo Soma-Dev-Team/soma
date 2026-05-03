@@ -61,7 +61,13 @@ export function ProfileSync() {
         if (!signedIn) return;
 
         const res = await fetch('/api/profile', { cache: 'no-store' });
-        if (!res.ok) return;
+        if (!res.ok) {
+          // 501 = sync disabled (no DB adapter). 401 = not signed in. Either
+          // way, log so it's visible during debugging without scraping logs.
+          const body = await res.text().catch(() => '');
+          console.warn(`[soma/sync] profile pull failed (${res.status}): ${body}`);
+          return;
+        }
         const data = (await res.json()) as {
           profile: Record<string, any> | null;
           updated_at: string | null;
@@ -79,8 +85,8 @@ export function ProfileSync() {
           // If local has nothing yet, the merged blob IS the server blob.
           await saveProfile(merged);
         }
-      } catch {
-        /* offline / no auth — fine */
+      } catch (err) {
+        console.warn('[soma/sync] profile pull error:', err);
       } finally {
         initialPullDone.current = true;
       }
@@ -110,7 +116,14 @@ export function ProfileSync() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
-      }).catch(() => {});
+      })
+        .then(async (res) => {
+          if (!res.ok) {
+            const body = await res.text().catch(() => '');
+            console.warn(`[soma/sync] profile push failed (${res.status}): ${body}`);
+          }
+        })
+        .catch((err) => console.warn('[soma/sync] profile push error:', err));
     }, 800);
 
     return () => {

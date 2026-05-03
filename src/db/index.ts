@@ -12,8 +12,17 @@ let _initialized = false;
 export function getDb() {
   if (_initialized) return _db;
   _initialized = true;
-  const url = process.env.DATABASE_URL;
-  if (!url) return null;
+  // Defensive trim — pasted env values on Vercel sometimes carry leading
+  // whitespace which silently breaks neon().
+  const url = (process.env.DATABASE_URL ?? '').trim();
+  if (!url) {
+    console.warn('[soma/db] DATABASE_URL is empty — running without database adapter.');
+    return null;
+  }
+  if (!/^postgres(ql)?:\/\//.test(url)) {
+    console.warn('[soma/db] DATABASE_URL does not look like a Postgres URL.');
+    return null;
+  }
   try {
     const sql = neon(url);
     _db = drizzle(sql, { schema });
