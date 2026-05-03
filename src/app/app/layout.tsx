@@ -7,7 +7,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen md:flex">
       <AppNav />
-      <div className="flex-1 min-w-0 pb-20 md:pb-0">
+      <div
+        className="flex-1 min-w-0 md:pb-0"
+        style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
+      >
         <header className="sticky top-0 z-20 bg-background/85 backdrop-blur border-b border-border">
           <div className="mx-auto max-w-2xl px-5 h-14 flex items-center justify-between">
             <Link href="/app" aria-label="Soma">

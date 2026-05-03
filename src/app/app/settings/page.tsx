@@ -22,6 +22,7 @@ import { getStoredGeminiKey, setStoredGeminiKey } from '@/lib/gemini';
 import { ExternalLink } from 'lucide-react';
 import type { Integration } from '@/lib/db/dexie';
 import { PalettePicker } from '@/components/palette-picker';
+import { AccountSection } from '@/components/account-section';
 
 type ProviderId = Integration['provider'];
 
@@ -99,10 +100,7 @@ export default function SettingsPage() {
       <Card>
         <CardContent className="pt-5 space-y-3">
           <h2 className="label-mono text-muted-foreground">ACCOUNT</h2>
-          <p className="text-sm text-muted-foreground">
-            No sign-in needed. Your data lives only in this browser. Use Export JSON below to move
-            it between devices.
-          </p>
+          <AccountSection />
         </CardContent>
       </Card>
 
@@ -212,7 +210,7 @@ export default function SettingsPage() {
       </Card>
 
       <p className="label-mono text-muted-foreground text-center pt-4">
-        SOMA · AGPL-3.0 · BETA v0.0.4
+        SOMA · AGPL-3.0 · BETA v0.0.5
       </p>
     </div>
   );

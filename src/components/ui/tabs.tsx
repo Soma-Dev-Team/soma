@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 interface TabsCtx {
@@ -61,8 +62,32 @@ export function TabsTrigger({ value, children }: { value: string; children: Reac
   );
 }
 
-export function TabsContent({ value, children, className }: { value: string; children: React.ReactNode; className?: string }) {
+export function TabsContent({
+  value,
+  children,
+  className,
+}: {
+  value: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   const ctx = React.useContext(Ctx);
-  if (!ctx || ctx.value !== value) return null;
-  return <div className={cn('mt-4', className)}>{children}</div>;
+  const reduce = useReducedMotion();
+  if (!ctx) return null;
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      {ctx.value === value && (
+        <motion.div
+          key={value}
+          initial={reduce ? { opacity: 0 } : { opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={reduce ? { opacity: 0 } : { opacity: 0, y: -6 }}
+          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+          className={cn('mt-4', className)}
+        >
+          {children}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 }

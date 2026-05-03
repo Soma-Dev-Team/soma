@@ -9,6 +9,7 @@ import { Plus } from 'lucide-react';
 import { CalorieRing, type GoalMode } from '@/components/calorie-ring';
 import { MacroRings } from '@/components/macro-rings';
 import { MealList } from '@/components/meal-list';
+import { PageStagger, stackItem } from '@/components/page-shell';
 import { calorieLabel } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -82,8 +83,8 @@ export default function TodayPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <motion.div animate={controls} className="flex items-center justify-center pt-2">
+    <PageStagger className="space-y-6">
+      <motion.div variants={stackItem} animate={controls} className="flex items-center justify-center pt-2">
         <CalorieRing
           consumed={totals.kcal}
           goal={goal}
@@ -92,25 +93,33 @@ export default function TodayPage() {
         />
       </motion.div>
 
-      <Card>
-        <CardContent className="pt-6 pb-5">
-          <MacroRings consumed={totals} targets={targets} />
-        </CardContent>
-      </Card>
+      <motion.div variants={stackItem}>
+        <Card>
+          <CardContent className="pt-6 pb-5">
+            <MacroRings consumed={totals} targets={targets} />
+          </CardContent>
+        </Card>
+      </motion.div>
 
-      <MealList
-        meals={meals ?? []}
-        foods={foods ?? new Map()}
-        onDelete={async (id) => {
-          if (confirm('Delete this entry?')) await deleteMeal(id);
-        }}
-      />
+      <motion.div variants={stackItem}>
+        <MealList
+          meals={meals ?? []}
+          foods={foods ?? new Map()}
+          onDelete={async (id) => {
+            if (confirm('Delete this entry?')) await deleteMeal(id);
+          }}
+        />
+      </motion.div>
 
-      <Link href="/app/add-food" className="fixed bottom-24 right-5 md:bottom-8">
+      <Link
+        href="/app/add-food"
+        className="fixed right-5 z-40 md:bottom-8"
+        style={{ bottom: 'calc(6rem + env(safe-area-inset-bottom))' }}
+      >
         <Button size="lg" className="rounded-full h-14 w-14 shadow-lg p-0" aria-label="Add food">
           <Plus size={24} />
         </Button>
       </Link>
-    </div>
+    </PageStagger>
   );
 }

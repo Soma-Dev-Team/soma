@@ -17,7 +17,10 @@ export function AppNav() {
     { href: '/app/settings', label: t('settings'), icon: Settings },
   ];
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-30 border-t border-border bg-surface/95 backdrop-blur md:static md:border-t-0 md:border-r md:h-screen md:w-56 md:flex-shrink-0">
+    <nav
+      className="fixed bottom-0 inset-x-0 z-30 border-t border-border bg-surface/95 backdrop-blur md:static md:border-t-0 md:border-r md:h-screen md:w-56 md:flex-shrink-0"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+    >
       <div className="mx-auto flex md:flex-col md:p-4 md:gap-1 max-w-md md:max-w-none">
         {items.map((it) => {
           const active = it.exact ? path === it.href : path.startsWith(it.href);

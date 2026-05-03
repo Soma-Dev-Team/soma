@@ -1,6 +1,6 @@
 {
   "name": "soma",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "private": true,
   "license": "AGPL-3.0-only",
   "scripts": {
@@ -8,9 +8,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@auth/drizzle-adapter": "^1.7.2",
+    "@neondatabase/serverless": "^0.10.1",
     "@vercel/analytics": "^2.0.1",
     "@zxing/browser": "^0.1.5",
     "@zxing/library": "^0.21.3",
@@ -19,15 +24,18 @@
     "date-fns": "^4.1.0",
     "dexie": "^4.0.8",
     "dexie-react-hooks": "^1.1.7",
+    "drizzle-orm": "^0.36.0",
     "framer-motion": "^11.11.0",
     "lucide-react": "^0.451.0",
     "next": "^15.0.0",
+    "next-auth": "5.0.0-beta.25",
     "next-intl": "^3.20.0",
     "next-themes": "^0.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.0",
     "recharts": "^2.13.0",
+    "resend": "^4.0.1",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.23.8"
@@ -37,6 +45,7 @@
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.20",
+    "drizzle-kit": "^0.28.0",
     "eslint": "^9.11.0",
     "eslint-config-next": "^15.0.0",
     "postcss": "^8.4.47",

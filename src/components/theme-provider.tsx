@@ -24,7 +24,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         deep: 'deep',
         slate: 'slate',
       }}
-      disableTransitionOnChange
     >
       {children}
     </NextThemes>

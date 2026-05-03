@@ -1,5 +1,6 @@
 'use client';
 
+import { motion, useReducedMotion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { StatRing } from './stat-ring';
 
@@ -15,6 +16,8 @@ export function MacroRings({
   showFiber?: boolean;
 }) {
   const t = useTranslations('macros');
+  const reduce = useReducedMotion();
+
   const items = [
     { label: t('protein'), v: consumed.protein_g, target: targets.protein_g },
     { label: t('carbs'), v: consumed.carbs_g, target: targets.carbs_g },
@@ -22,20 +25,38 @@ export function MacroRings({
   ];
   if (showFiber) items.push({ label: t('fiber'), v: consumed.fiber_g, target: targets.fiber_g ?? 30 });
 
-  const cols = items.length === 4 ? 'grid-cols-4' : 'grid-cols-3';
+  // 4 macros: 2×2 on mobile, 1×4 on sm+. Avoids 4-ring horizontal overflow on
+  // narrow screens (320–360px viewports).
+  const cols = items.length === 4 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-3';
+
+  const stagger = {
+    hidden: {},
+    show: { transition: { staggerChildren: reduce ? 0 : 0.08, delayChildren: 0.1 } },
+  };
+  const item = {
+    hidden: { opacity: 0, y: reduce ? 0 : 8 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
+  };
+
   return (
-    <div className={`grid ${cols} gap-2 sm:gap-4`}>
+    <motion.div
+      variants={stagger}
+      initial="hidden"
+      animate="show"
+      className={`grid ${cols} gap-3 sm:gap-4 place-items-center`}
+    >
       {items.map((m) => (
-        <StatRing
-          key={m.label}
-          label={m.label}
-          value={Math.round(m.v)}
-          target={m.target}
-          unit="g"
-          size={size}
-          weight="thin"
-        />
+        <motion.div key={m.label} variants={item}>
+          <StatRing
+            label={m.label}
+            value={Math.round(m.v)}
+            target={m.target}
+            unit="g"
+            size={size}
+            weight="thin"
+          />
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 }

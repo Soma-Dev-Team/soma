@@ -4,34 +4,31 @@
 
 /*
  * Soma — RD9 Graphite Duotone, six approved palettes.
- * Defined in Design/CLAUDE.md. Each palette is a complete theme.
- *
- *  light   paper #F4F0EA · slate-deep → ink ring · ink text · primary light
- *  sand    sand  #E4DCCD · slate-deep → ink ring · ink text
- *  dark    dark  #171A1F · slate → paper ring · paper text · primary dark
- *  mid     mid   #0E1722 · slate → paper ring · paper text
- *  deep    slate-deep ground · paper → slate ring · paper text
- *  slate   slate ground     · paper → ink ring · paper text
+ * Each palette has its own subtle chromatic personality on the ring stops
+ * (still slate-derived; the brand stays single-accent), so the rings
+ * read distinctively when you swap themes.
  */
 
 @layer base {
   :root {
     /* RD9 raw tokens (always available) */
-    --soma-ink: 153 14% 11%;        /* #18201C */
-    --soma-paper: 38 27% 94%;       /* #F4F0EA */
-    --soma-dark: 220 11% 11%;       /* #171A1F */
-    --soma-midnight: 213 43% 9%;    /* #0E1722 */
-    --soma-sand: 38 28% 85%;        /* #E4DCCD */
+    --soma-ink: 153 14% 11%;
+    --soma-paper: 38 27% 94%;
+    --soma-dark: 220 11% 11%;
+    --soma-midnight: 213 43% 9%;
+    --soma-sand: 38 28% 85%;
     --soma-slate: 220 12% 60%;
     --soma-slate-deep: 220 14% 40%;
 
-    /* shared */
     --radius: 1rem;
     --destructive: 0 60% 38%;
     --destructive-foreground: 38 27% 94%;
+
+    /* Theme transition timing — overridable per-palette */
+    --theme-transition: 320ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  /* ────────── light · paper ground · primary light ────────── */
+  /* ────────── light · paper · cool slate→ink ring ────────── */
   :root,
   .light {
     --background: var(--soma-paper);
@@ -44,12 +41,12 @@
     --accent: var(--soma-ink);
     --accent-foreground: var(--soma-paper);
 
-    --ring-from: hsl(var(--soma-slate-deep));
+    --ring-from: oklch(0.5 0.07 240);
     --ring-to: hsl(var(--soma-ink));
     --ring-track: hsl(var(--soma-ink) / 0.08);
   }
 
-  /* ────────── sand · warm light variant ────────── */
+  /* ────────── sand · warm light · slate-deep→ink ────────── */
   .sand {
     --background: var(--soma-sand);
     --foreground: var(--soma-ink);
@@ -61,12 +58,13 @@
     --accent: var(--soma-ink);
     --accent-foreground: var(--soma-paper);
 
-    --ring-from: hsl(var(--soma-slate-deep));
+    /* Sand is warmer; nudge ring stops slightly violet for contrast */
+    --ring-from: oklch(0.5 0.085 280);
     --ring-to: hsl(var(--soma-ink));
     --ring-track: hsl(var(--soma-ink) / 0.1);
   }
 
-  /* ────────── dark · graphite ground · primary dark ────────── */
+  /* ────────── dark · graphite · bright slate→paper ────────── */
   .dark {
     --background: var(--soma-dark);
     --foreground: var(--soma-paper);
@@ -78,13 +76,12 @@
     --accent: var(--soma-paper);
     --accent-foreground: var(--soma-ink);
 
-    /* Brighter slate start so the ring reads at small wordmark sizes */
-    --ring-from: 220 18% 70%;
+    --ring-from: oklch(0.74 0.085 235);
     --ring-to: hsl(var(--soma-paper));
     --ring-track: hsl(var(--soma-paper) / 0.18);
   }
 
-  /* ────────── mid · midnight ground ────────── */
+  /* ────────── mid · midnight · teal-leaning slate→paper ────────── */
   .mid {
     --background: var(--soma-midnight);
     --foreground: var(--soma-paper);
@@ -96,12 +93,13 @@
     --accent: var(--soma-paper);
     --accent-foreground: var(--soma-midnight);
 
-    --ring-from: 220 18% 72%;
+    /* Cooler, slight teal hint to match the midnight ground */
+    --ring-from: oklch(0.7 0.1 215);
     --ring-to: hsl(var(--soma-paper));
     --ring-track: hsl(var(--soma-paper) / 0.18);
   }
 
-  /* ────────── deep · deep slate ground ────────── */
+  /* ────────── deep · slate-deep · paper→vivid slate ────────── */
   .deep {
     --background: var(--soma-slate-deep);
     --foreground: var(--soma-paper);
@@ -113,12 +111,13 @@
     --accent: var(--soma-paper);
     --accent-foreground: 220 14% 28%;
 
+    /* Vivid slate-blue endpoint for chromatic pop on the slate ground */
     --ring-from: hsl(var(--soma-paper));
-    --ring-to: hsl(var(--soma-slate));
+    --ring-to: oklch(0.62 0.12 240);
     --ring-track: hsl(var(--soma-paper) / 0.15);
   }
 
-  /* ────────── slate · slate ground ────────── */
+  /* ────────── slate · slate · paper→ink ────────── */
   .slate {
     --background: var(--soma-slate);
     --foreground: var(--soma-paper);
@@ -138,15 +137,34 @@
   * {
     border-color: hsl(var(--border));
   }
+
+  /*
+   * Theme transitions — animate background, color, and border-color
+   * everywhere so palette switches glide instead of snap. Limited to
+   * those three properties so we don't accidentally animate hover
+   * states or layout properties.
+   */
   html, body {
     background: hsl(var(--background));
     color: hsl(var(--foreground));
     font-feature-settings: "ss01", "cv11";
+    transition: background-color var(--theme-transition), color var(--theme-transition);
   }
   body {
     @apply min-h-screen antialiased;
     font-family: 'Manrope', system-ui, sans-serif;
   }
+  *, *::before, *::after {
+    transition-property: background-color, color, border-color, fill, stroke;
+    transition-duration: var(--theme-transition);
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  /* Don't animate transforms/opacity through the theme transition channel —
+     those are framer-motion territory. */
+  html.changing-theme *, html.changing-theme *::before, html.changing-theme *::after {
+    transition-property: background-color, color, border-color, fill, stroke;
+  }
+
   .num {
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
@@ -163,6 +181,12 @@
     letter-spacing: 0.18em;
     text-transform: uppercase;
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0ms !important;
+    }
+  }
 }
 
 @layer utilities {
@@ -172,6 +196,9 @@
   .bg-sand { background-color: hsl(var(--soma-sand)); }
   .text-ink { color: hsl(var(--soma-ink)); }
   .text-paper { color: hsl(var(--soma-paper)); }
+
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  .pt-safe { padding-top: env(safe-area-inset-top); }
 
   @keyframes breathe {
     0%, 100% { opacity: 0.85; transform: scale(1); }
