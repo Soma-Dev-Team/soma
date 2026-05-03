@@ -1,41 +1,37 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useState } from 'react';
 import { Camera } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { LoadingRing } from './loading-ring';
-import { fileToBase64, geminiScan, getStoredGeminiKey, type GeminiFoodItem } from '@/lib/gemini';
 import { logMeal, upsertFood } from '@/lib/db/repo';
-import { useEnergyLabel } from '@/lib/hooks';
 import { uuid } from '@/lib/utils';
 import type { MealLog } from '@/lib/db/dexie';
+import { useEnergyLabel } from '@/lib/hooks';
+import type { FoodScanItem } from '@/lib/openrouter';
 
 export function PhotoScan({ defaultMeal, onLogged }: { defaultMeal?: MealLog['meal']; onLogged: () => void }) {
-  const [apiKey, setApiKey] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [items, setItems] = useState<GeminiFoodItem[] | null>(null);
+  const [items, setItems] = useState<FoodScanItem[] | null>(null);
   const [meal, setMeal] = useState<MealLog['meal']>(defaultMeal ?? 'snack');
   const energyLabel = useEnergyLabel();
 
-  useEffect(() => {
-    setApiKey(getStoredGeminiKey());
-  }, []);
-
   async function handleFile(file: File) {
-    if (!apiKey) {
-      setError('Add your Gemini API key in Settings → AI scan first.');
-      return;
-    }
     setBusy(true);
     setError(null);
     try {
-      const { data, mimeType } = await fileToBase64(file);
-      const res = await geminiScan({ apiKey, imageBase64: data, mimeType });
-      setItems(res.items);
+      const fd = new FormData();
+      fd.append('image', file);
+      const res = await fetch('/api/scan', { method: 'POST', body: fd });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.error ?? `Scan failed (${res.status})`);
+      }
+      const scan = (await res.json()) as { items: FoodScanItem[]; notes?: string };
+      setItems(scan.items ?? []);
     } catch (e: any) {
       setError(e.message ?? 'Scan failed');
     } finally {
@@ -49,7 +45,7 @@ export function PhotoScan({ defaultMeal, onLogged }: { defaultMeal?: MealLog['me
       const id = uuid();
       await upsertFood({
         id,
-        source: 'gemini',
+        source: 'gemini', // legacy enum value: AI-generated; kept stable for existing local data
         name: it.name,
         serving_size_g: it.grams,
         calories: it.calories,
@@ -69,20 +65,6 @@ export function PhotoScan({ defaultMeal, onLogged }: { defaultMeal?: MealLog['me
       });
     }
     onLogged();
-  }
-
-  if (!apiKey) {
-    return (
-      <div className="space-y-3 rounded-2xl border border-border p-5">
-        <p className="text-sm text-muted-foreground">
-          AI photo scan uses your own Gemini API key. Add one in{' '}
-          <Link href="/app/settings" className="underline">
-            Settings → AI scan
-          </Link>{' '}
-          to continue.
-        </p>
-      </div>
-    );
   }
 
   if (items) {
@@ -172,7 +154,9 @@ export function PhotoScan({ defaultMeal, onLogged }: { defaultMeal?: MealLog['me
             <div className="flex flex-col items-center gap-2 text-muted-foreground">
               <Camera />
               <span className="text-sm">Tap to take or choose a photo</span>
-              <span className="text-xs">Image is sent to Gemini once, never persisted.</span>
+              <span className="text-xs">
+                Image is sent once for analysis and not stored on the server.
+              </span>
             </div>
           )}
         </div>

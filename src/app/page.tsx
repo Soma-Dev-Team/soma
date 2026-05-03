@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { SomaMark, GraphiteRing } from '@/components/soma-mark';
+import { UserBadge } from '@/components/user-badge';
 
 export default function Home() {
   return <Marketing />;
@@ -44,6 +45,7 @@ function Marketing() {
         </Link>
         <div className="flex items-center gap-3">
           <ThemeToggle />
+          <UserBadge />
           <Link href="/login">
             <Button size="sm" variant="secondary">
               Sign in

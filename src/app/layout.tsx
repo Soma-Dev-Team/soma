@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     'open source',
     'privacy',
     'PWA',
-    'Gemini',
+    'AI nutrition',
     'barcode scanner',
     'Open Food Facts',
     'AGPL',

@@ -18,9 +18,9 @@ export default function AboutPage() {
         <li>Privacy claims are worthless if you can't audit them.</li>
       </ol>
       <p className="mt-6 leading-relaxed">
-        That's why Soma uses Bring-Your-Own-Key for AI scans (the photo is sent to Gemini once and
-        not persisted), runs fully on your device via IndexedDB, and ships under AGPL-3.0 so anyone
-        can audit it or run their own copy.
+        That's why Soma forwards each AI photo scan once and immediately releases it — no copy on
+        the server, no training data — runs fully on your device via IndexedDB, and ships under
+        AGPL-3.0 so anyone can audit it or run their own copy.
       </p>
       <h2 className="text-xl font-semibold mt-10">License</h2>
       <p className="leading-relaxed">

@@ -18,9 +18,9 @@ export default function PrivacyPage() {
 
       <h2 className="text-lg font-semibold mt-8">What stays on your device</h2>
       <p>
-        Your profile, weight log, food log, custom foods, barcode cache, theme choice, and Gemini
-        API key all live in your browser via IndexedDB and localStorage. They never leave the
-        device unless you explicitly use Settings → Export JSON.
+        Your profile, weight log, food log, custom foods, barcode cache, and theme choice all live
+        in your browser via IndexedDB. They never leave the device unless you explicitly sign in
+        (to back them up to your account) or use Settings → Export JSON.
       </p>
 
       <h2 className="text-lg font-semibold mt-8">What gets sent over the network</h2>
@@ -31,9 +31,15 @@ export default function PrivacyPage() {
           look it up. Nothing else is attached.
         </li>
         <li>
-          <strong>Google Gemini (AI photo scan):</strong> the image you choose is uploaded once,
-          using your own API key. Soma does not see the image, does not store it, and does not
-          proxy the request. Google's policies for the API apply.
+          <strong>AI photo scan (OpenRouter):</strong> the image you choose is forwarded once
+          through Soma's server to OpenRouter for analysis, then released. We do not write the
+          image to disk and do not retain it after the response. OpenRouter's terms apply to the
+          analysis itself.
+        </li>
+        <li>
+          <strong>Sign-in (optional):</strong> if you sign in with Google or via magic link, your
+          email and (for Google) name and avatar are stored in our database so we can recognize you
+          on return visits. You can delete the account anytime.
         </li>
         <li>
           <strong>Strava / Garmin / Withings:</strong> only if you connect them in Settings. The

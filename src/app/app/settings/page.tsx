@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,8 +17,6 @@ import {
   saveProfile,
   wipeAll,
 } from '@/lib/db/repo';
-import { getStoredGeminiKey, setStoredGeminiKey } from '@/lib/gemini';
-import { ExternalLink } from 'lucide-react';
 import type { Integration } from '@/lib/db/dexie';
 import { PalettePicker } from '@/components/palette-picker';
 import { AccountSection } from '@/components/account-section';
@@ -30,13 +27,7 @@ export default function SettingsPage() {
   const t = useTranslations('settings');
   const profile = useLiveQuery(() => getProfile(), []);
   const integrations = useLiveQuery(() => listIntegrations(), []);
-  const [geminiKey, setGeminiKey] = useState('');
-  const [savedKey, setSavedKey] = useState(false);
   const [oauthMsg, setOauthMsg] = useState<string | null>(null);
-
-  useEffect(() => {
-    setGeminiKey(getStoredGeminiKey());
-  }, []);
 
   // Capture OAuth callback fragments and persist locally.
   useEffect(() => {
@@ -79,12 +70,6 @@ export default function SettingsPage() {
     if (!confirm('This permanently clears all locally stored data on this device. Continue?')) return;
     await wipeAll();
     location.href = '/app/onboarding';
-  }
-
-  function saveKey() {
-    setStoredGeminiKey(geminiKey.trim());
-    setSavedKey(true);
-    setTimeout(() => setSavedKey(false), 1500);
   }
 
   const connected = new Map((integrations ?? []).map((i) => [i.provider, i]));
@@ -139,33 +124,6 @@ export default function SettingsPage() {
               </Button>
             </Link>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="pt-5 space-y-3">
-          <h2 className="label-mono text-muted-foreground">{t('ai').toUpperCase()}</h2>
-          <Label>{t('gemini_key_label')}</Label>
-          <div className="flex gap-2">
-            <Input
-              type="password"
-              placeholder="AIza..."
-              value={geminiKey}
-              onChange={(e) => setGeminiKey(e.target.value)}
-            />
-            <Button onClick={saveKey}>{savedKey ? 'Saved ✓' : 'Save'}</Button>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {t('gemini_key_help')}{' '}
-            <a
-              href="https://aistudio.google.com/apikey"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline inline-flex items-center gap-0.5"
-            >
-              Get a key <ExternalLink size={11} />
-            </a>
-          </p>
         </CardContent>
       </Card>
 

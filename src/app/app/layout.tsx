@@ -1,6 +1,7 @@
 import { AppNav } from '@/components/app-nav';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { SomaMark } from '@/components/soma-mark';
+import { UserBadge } from '@/components/user-badge';
 import Link from 'next/link';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -16,7 +17,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Link href="/app" aria-label="Soma">
               <SomaMark size={24} />
             </Link>
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <UserBadge />
+            </div>
           </div>
         </header>
         <main className="mx-auto max-w-2xl px-5 py-6">{children}</main>
