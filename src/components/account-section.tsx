@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { LoadingRing } from './loading-ring';
+import { signOutAction } from '@/app/actions';
 
 interface SessionPayload {
   user?: { name?: string; email?: string; image?: string };
@@ -59,7 +60,7 @@ export function AccountSection() {
             <div className="text-xs text-muted-foreground truncate">{user.email}</div>
           )}
         </div>
-        <form action="/api/auth/signout" method="post">
+        <form action={signOutAction}>
           <Button type="submit" variant="ghost" size="sm">
             Sign out
           </Button>

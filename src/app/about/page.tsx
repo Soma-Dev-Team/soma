@@ -10,18 +10,22 @@ export default function AboutPage() {
       </p>
       <h1 className="text-4xl wordmark mt-4">about</h1>
       <p className="text-muted-foreground leading-relaxed mt-4">
-        Soma is a free, open-source nutrition tracker built around three convictions:
+        Soma is a modern calorie and macro tracker. The point is to spend less time inside the app:
+        snap a meal, scan a barcode, log a weight, and get on with your day.
       </p>
-      <ol className="mt-4 space-y-3 text-foreground/90 leading-relaxed list-decimal list-inside">
-        <li>You shouldn't need an account to count calories.</li>
-        <li>You shouldn't pay a subscription to look up a barcode.</li>
-        <li>Privacy claims are worthless if you can't audit them.</li>
-      </ol>
-      <p className="mt-6 leading-relaxed">
-        That's why Soma forwards each AI photo scan once and immediately releases it — no copy on
-        the server, no training data — runs fully on your device via IndexedDB, and ships under
-        AGPL-3.0 so anyone can audit it or run their own copy.
+      <p className="leading-relaxed">
+        Track calories and the four macros that matter — protein, carbs, fat, fiber. Each gets its
+        own ring, so the day is legible at a glance. Six themes, lots of polish, and an AI photo
+        scan when you don't feel like typing.
       </p>
+      <h2 className="text-xl font-semibold mt-10">What's in</h2>
+      <ul className="space-y-2 list-disc list-inside marker:text-muted-foreground">
+        <li>AI photo scan with editable results</li>
+        <li>Barcode scanner backed by Open Food Facts and USDA</li>
+        <li>Weight tracking + macro charts</li>
+        <li>Strava, Withings, and Garmin connections</li>
+        <li>Six themes (light · sand · dark · midnight · deep · slate)</li>
+      </ul>
       <h2 className="text-xl font-semibold mt-10">License</h2>
       <p className="leading-relaxed">
         AGPL-3.0. Source on GitHub. Translations and bug reports welcome.

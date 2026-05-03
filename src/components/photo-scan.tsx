@@ -12,19 +12,31 @@ import type { MealLog } from '@/lib/db/dexie';
 import { useEnergyLabel } from '@/lib/hooks';
 import type { FoodScanItem } from '@/lib/openrouter';
 
+const FIELDS: Array<{ key: keyof FoodScanItem; label: string; unit: string }> = [
+  { key: 'grams', label: 'Grams', unit: 'g' },
+  { key: 'calories', label: 'Calories', unit: '' },
+  { key: 'protein_g', label: 'Protein', unit: 'g' },
+  { key: 'carbs_g', label: 'Carbs', unit: 'g' },
+  { key: 'fat_g', label: 'Fat', unit: 'g' },
+  { key: 'fiber_g', label: 'Fiber', unit: 'g' },
+];
+
 export function PhotoScan({ defaultMeal, onLogged }: { defaultMeal?: MealLog['meal']; onLogged: () => void }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [items, setItems] = useState<FoodScanItem[] | null>(null);
   const [meal, setMeal] = useState<MealLog['meal']>(defaultMeal ?? 'snack');
+  const [context, setContext] = useState('');
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const energyLabel = useEnergyLabel();
 
-  async function handleFile(file: File) {
+  async function runScan(file: File) {
     setBusy(true);
     setError(null);
     try {
       const fd = new FormData();
       fd.append('image', file);
+      if (context.trim()) fd.append('context', context.trim());
       const res = await fetch('/api/scan', { method: 'POST', body: fd });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
@@ -45,7 +57,7 @@ export function PhotoScan({ defaultMeal, onLogged }: { defaultMeal?: MealLog['me
       const id = uuid();
       await upsertFood({
         id,
-        source: 'gemini', // legacy enum value: AI-generated; kept stable for existing local data
+        source: 'gemini', // legacy enum: AI-generated
         name: it.name,
         serving_size_g: it.grams,
         calories: it.calories,
@@ -71,36 +83,36 @@ export function PhotoScan({ defaultMeal, onLogged }: { defaultMeal?: MealLog['me
     return (
       <div className="space-y-3">
         <h3 className="font-semibold">Review</h3>
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {items.map((it, i) => (
-            <li key={i} className="rounded-lg border border-border p-3">
-              <div className="flex justify-between items-baseline">
-                <span className="font-medium">{it.name}</span>
-                <span className="text-xs num text-muted-foreground">
-                  {it.grams ?? '?'} g · {Math.round(it.calories ?? 0)} {energyLabel}
-                </span>
+            <li key={i} className="rounded-lg border border-border p-3 space-y-2">
+              <div className="space-y-1">
+                <Label className="label-mono text-muted-foreground">Name</Label>
+                <Input
+                  value={it.name}
+                  onChange={(e) => {
+                    const next = [...items];
+                    next[i] = { ...next[i], name: e.target.value };
+                    setItems(next);
+                  }}
+                />
               </div>
-              <Input
-                className="mt-2"
-                value={it.name}
-                onChange={(e) => {
-                  const next = [...items];
-                  next[i] = { ...next[i], name: e.target.value };
-                  setItems(next);
-                }}
-              />
-              <div className="grid grid-cols-4 gap-2 mt-2">
-                {(['grams', 'calories', 'protein_g', 'carbs_g'] as const).map((k) => (
-                  <Input
-                    key={k}
-                    type="number"
-                    value={(it as any)[k] ?? 0}
-                    onChange={(e) => {
-                      const next = [...items];
-                      (next[i] as any)[k] = Number(e.target.value);
-                      setItems(next);
-                    }}
-                  />
+              <div className="grid grid-cols-3 gap-2">
+                {FIELDS.map(({ key, label, unit }) => (
+                  <div key={key} className="space-y-1">
+                    <Label className="label-mono text-muted-foreground text-[10px]">
+                      {label} ({key === 'calories' ? energyLabel : unit})
+                    </Label>
+                    <Input
+                      type="number"
+                      value={(it as any)[key] ?? 0}
+                      onChange={(e) => {
+                        const next = [...items];
+                        (next[i] as any)[key] = Number(e.target.value);
+                        setItems(next);
+                      }}
+                    />
+                  </div>
                 ))}
               </div>
             </li>
@@ -133,6 +145,22 @@ export function PhotoScan({ defaultMeal, onLogged }: { defaultMeal?: MealLog['me
           <option value="snack">Snack</option>
         </select>
       </div>
+
+      <div className="space-y-1.5">
+        <Label>Context (optional)</Label>
+        <textarea
+          value={context}
+          onChange={(e) => setContext(e.target.value)}
+          placeholder="Anything to know? e.g. cooked in 1 tbsp butter, 200 ml glass, large portion"
+          rows={2}
+          maxLength={500}
+          className="flex w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        />
+        <p className="text-xs text-muted-foreground">
+          Helps the model nail portion sizes and hidden ingredients.
+        </p>
+      </div>
+
       <label className="block">
         <input
           type="file"
@@ -141,7 +169,10 @@ export function PhotoScan({ defaultMeal, onLogged }: { defaultMeal?: MealLog['me
           className="hidden"
           onChange={(e) => {
             const f = e.target.files?.[0];
-            if (f) handleFile(f);
+            if (f) {
+              setPendingFile(f);
+              runScan(f);
+            }
           }}
           disabled={busy}
         />
@@ -161,7 +192,17 @@ export function PhotoScan({ defaultMeal, onLogged }: { defaultMeal?: MealLog['me
           )}
         </div>
       </label>
-      {error && <p className="text-sm text-destructive">{error}</p>}
+
+      {error && (
+        <div className="space-y-2">
+          <p className="text-sm text-destructive">{error}</p>
+          {pendingFile && (
+            <Button variant="secondary" size="sm" onClick={() => runScan(pendingFile)}>
+              Try again
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

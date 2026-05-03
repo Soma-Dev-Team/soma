@@ -5,12 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { uuid } from '@/lib/utils';
+import { useEnergyLabel } from '@/lib/hooks';
 import type { Food } from '@/lib/db/dexie';
 
 export function CustomFoodForm({ onCreated }: { onCreated: (food: Food) => void }) {
+  const energyLabel = useEnergyLabel();
   const [form, setForm] = useState({
     name: '',
     brand: '',
+    description: '',
     serving_size_g: 100,
     calories: 0,
     protein_g: 0,
@@ -19,7 +22,7 @@ export function CustomFoodForm({ onCreated }: { onCreated: (food: Food) => void 
     fiber_g: 0,
   });
 
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm({ ...form, [k]: typeof form[k] === 'number' ? Number(e.target.value) : e.target.value });
 
   function submit(e: React.FormEvent) {
@@ -30,6 +33,7 @@ export function CustomFoodForm({ onCreated }: { onCreated: (food: Food) => void 
       source: 'custom',
       name: form.name.trim(),
       brand: form.brand.trim() || undefined,
+      description: form.description.trim() || undefined,
       serving_size_g: form.serving_size_g,
       calories: form.calories,
       protein_g: form.protein_g,
@@ -53,16 +57,27 @@ export function CustomFoodForm({ onCreated }: { onCreated: (food: Food) => void 
         <Input value={form.brand} onChange={set('brand')} />
       </div>
       <div className="space-y-1.5">
+        <Label>Description (optional)</Label>
+        <textarea
+          value={form.description}
+          onChange={set('description')}
+          rows={2}
+          maxLength={500}
+          placeholder="Mom's recipe, one slice, includes ricotta + meat sauce"
+          className="flex w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        />
+      </div>
+      <div className="space-y-1.5">
         <Label>Serving size (g)</Label>
         <Input type="number" value={form.serving_size_g} onChange={set('serving_size_g')} />
       </div>
       <p className="text-xs text-muted-foreground pt-1">Per serving:</p>
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Calories" v={form.calories} on={set('calories')} />
-        <Field label="Protein g" v={form.protein_g} on={set('protein_g')} />
-        <Field label="Carbs g" v={form.carbs_g} on={set('carbs_g')} />
-        <Field label="Fat g" v={form.fat_g} on={set('fat_g')} />
-        <Field label="Fiber g" v={form.fiber_g} on={set('fiber_g')} />
+        <Field label={`Calories (${energyLabel})`} v={form.calories} on={set('calories')} />
+        <Field label="Protein (g)" v={form.protein_g} on={set('protein_g')} />
+        <Field label="Carbs (g)" v={form.carbs_g} on={set('carbs_g')} />
+        <Field label="Fat (g)" v={form.fat_g} on={set('fat_g')} />
+        <Field label="Fiber (g)" v={form.fiber_g} on={set('fiber_g')} />
       </div>
       <Button type="submit" className="w-full">
         Continue
@@ -71,7 +86,15 @@ export function CustomFoodForm({ onCreated }: { onCreated: (food: Food) => void 
   );
 }
 
-function Field({ label, v, on }: { label: string; v: number; on: (e: React.ChangeEvent<HTMLInputElement>) => void }) {
+function Field({
+  label,
+  v,
+  on,
+}: {
+  label: string;
+  v: number;
+  on: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) {
   return (
     <div className="space-y-1.5">
       <Label>{label}</Label>

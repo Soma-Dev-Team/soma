@@ -4,6 +4,16 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { StatRing } from './stat-ring';
 
+type MacroKey = 'protein' | 'carbs' | 'fat' | 'fiber';
+
+interface MacroDef {
+  key: MacroKey;
+  v: number;
+  target: number;
+  /** CSS color used as the gradient start; gradient end is the foreground. */
+  from: string;
+}
+
 export function MacroRings({
   consumed,
   targets,
@@ -18,15 +28,21 @@ export function MacroRings({
   const t = useTranslations('macros');
   const reduce = useReducedMotion();
 
-  const items = [
-    { label: t('protein'), v: consumed.protein_g, target: targets.protein_g },
-    { label: t('carbs'), v: consumed.carbs_g, target: targets.carbs_g },
-    { label: t('fat'), v: consumed.fat_g, target: targets.fat_g },
+  const items: MacroDef[] = [
+    { key: 'protein', v: consumed.protein_g, target: targets.protein_g, from: 'var(--macro-protein)' },
+    { key: 'carbs',   v: consumed.carbs_g,   target: targets.carbs_g,   from: 'var(--macro-carbs)' },
+    { key: 'fat',     v: consumed.fat_g,     target: targets.fat_g,     from: 'var(--macro-fat)' },
   ];
-  if (showFiber) items.push({ label: t('fiber'), v: consumed.fiber_g, target: targets.fiber_g ?? 30 });
+  if (showFiber) {
+    items.push({
+      key: 'fiber',
+      v: consumed.fiber_g,
+      target: targets.fiber_g ?? 30,
+      from: 'var(--macro-fiber)',
+    });
+  }
 
-  // 4 macros: 2×2 on mobile, 1×4 on sm+. Avoids 4-ring horizontal overflow on
-  // narrow screens (320–360px viewports).
+  // 2×2 on mobile, 1×4 on sm+ — avoids overflow on 320px viewports.
   const cols = items.length === 4 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-3';
 
   const stagger = {
@@ -46,14 +62,16 @@ export function MacroRings({
       className={`grid ${cols} gap-3 sm:gap-4 place-items-center`}
     >
       {items.map((m) => (
-        <motion.div key={m.label} variants={item}>
+        <motion.div key={m.key} variants={item}>
           <StatRing
-            label={m.label}
+            label={t(m.key)}
             value={Math.round(m.v)}
             target={m.target}
             unit="g"
             size={size}
             weight="thin"
+            fromC={m.from}
+            toC="hsl(var(--foreground))"
           />
         </motion.div>
       ))}

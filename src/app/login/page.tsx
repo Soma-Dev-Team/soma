@@ -61,10 +61,21 @@ export default async function LoginPage({
                 <form
                   action={async (formData: FormData) => {
                     'use server';
-                    await signIn('resend', {
-                      email: formData.get('email') as string,
-                      redirectTo: next ?? '/app',
-                    });
+                    try {
+                      await signIn('nodemailer', {
+                        email: formData.get('email') as string,
+                        redirectTo: next ?? '/app',
+                      });
+                    } catch (err: any) {
+                      // Auth.js v5 throws a redirect on success; only
+                      // surface real errors.
+                      if (err?.digest?.startsWith?.('NEXT_REDIRECT')) throw err;
+                      const message = encodeURIComponent(
+                        err?.message ?? 'Could not send magic link',
+                      );
+                      const { redirect } = await import('next/navigation');
+                      redirect(`/login?error=${message}`);
+                    }
                   }}
                   className="space-y-3"
                 >

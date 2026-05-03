@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, primaryKey, integer } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, primaryKey, integer, jsonb } from 'drizzle-orm/pg-core';
 import type { AdapterAccountType } from 'next-auth/adapters';
 
 /*
@@ -15,8 +15,33 @@ export const users = pgTable('user', {
   email: text('email').notNull().unique(),
   emailVerified: timestamp('emailVerified', { mode: 'date' }),
   image: text('image'),
+  /**
+   * Synced Soma profile. Holds theme/palette + onboarding values + macro
+   * targets so they follow you between devices when signed in. Mutable from
+   * the client via /api/profile.
+   */
+  profile: jsonb('profile').$type<SyncedProfile | null>().default(null),
+  profileUpdatedAt: timestamp('profileUpdatedAt'),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
 });
+
+export interface SyncedProfile {
+  theme?: string;
+  units?: 'metric' | 'imperial';
+  locale?: string;
+  sex?: 'male' | 'female' | 'other';
+  birth_date?: string;
+  height_cm?: number;
+  activity_level?: string;
+  goal?: string;
+  goal_pace?: string;
+  target_calories?: number;
+  target_protein_g?: number;
+  target_carbs_g?: number;
+  target_fat_g?: number;
+  display_name?: string;
+  onboarded?: boolean;
+}
 
 export const accounts = pgTable(
   'account',

@@ -22,7 +22,7 @@ const jetbrains = JetBrains_Mono({
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 const TITLE = 'Soma — Calorie & macro tracking through a clean lens';
 const DESCRIPTION =
-  'Free, open-source, privacy-respecting calorie & macro tracking. Photo scans never leave your device. Bring your own AI key.';
+  'A modern nutrition tracker. AI photo scan, barcode lookup, weight + macro charts, six themes.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -33,13 +33,10 @@ export const metadata: Metadata = {
     'calorie counter',
     'macro tracker',
     'nutrition tracking',
-    'open source',
-    'privacy',
     'PWA',
     'AI nutrition',
     'barcode scanner',
     'Open Food Facts',
-    'AGPL',
   ],
   authors: [{ name: 'Soma' }],
   creator: 'Soma',

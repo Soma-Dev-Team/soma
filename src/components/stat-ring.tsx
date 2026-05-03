@@ -19,6 +19,9 @@ export interface StatRingProps {
   sub?: string;
   /** Override the colors used for over-target visualization. */
   overshoot?: boolean;
+  /** Optional per-instance gradient stops (CSS color values). */
+  fromC?: string;
+  toC?: string;
   size?: number;
   weight?: 'thin' | 'regular' | 'heavy';
   className?: string;
@@ -31,6 +34,8 @@ export function StatRing({
   target,
   sub,
   overshoot,
+  fromC,
+  toC,
   size = 96,
   weight = 'regular',
   className,
@@ -64,8 +69,8 @@ export function StatRing({
           size={size}
           pct={pct}
           weight={weight}
-          fromC={isOver ? 'hsl(var(--destructive))' : undefined}
-          toC={isOver ? 'hsl(var(--destructive))' : undefined}
+          fromC={isOver ? 'hsl(var(--destructive))' : fromC}
+          toC={isOver ? 'hsl(var(--destructive))' : toC}
           ariaLabel={`${label}: ${valueDisplay}${unit ? ` ${unit}` : ''}${
             isProgress ? ` of ${target}` : ''
           }`}

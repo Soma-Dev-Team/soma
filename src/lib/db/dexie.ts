@@ -39,6 +39,7 @@ export interface Food extends SyncMeta {
   source_id?: string;
   name: string;
   brand?: string;
+  description?: string;
   serving_size_g?: number;
   serving_label?: string;
   calories?: number;

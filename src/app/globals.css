@@ -44,6 +44,12 @@
     --ring-from: oklch(0.5 0.07 240);
     --ring-to: hsl(var(--soma-ink));
     --ring-track: hsl(var(--soma-ink) / 0.08);
+
+    /* Per-macro ring stops, tuned for paper grounds */
+    --macro-protein: oklch(0.5 0.13 240);    /* slate-blue */
+    --macro-carbs:   oklch(0.55 0.15 70);    /* warm amber */
+    --macro-fat:     oklch(0.5 0.16 15);     /* rose */
+    --macro-fiber:   oklch(0.5 0.13 165);    /* teal-green */
   }
 
   /* ────────── sand · warm light · slate-deep→ink ────────── */
@@ -62,6 +68,11 @@
     --ring-from: oklch(0.5 0.085 280);
     --ring-to: hsl(var(--soma-ink));
     --ring-track: hsl(var(--soma-ink) / 0.1);
+
+    --macro-protein: oklch(0.45 0.13 245);
+    --macro-carbs:   oklch(0.55 0.16 60);
+    --macro-fat:     oklch(0.48 0.18 12);
+    --macro-fiber:   oklch(0.48 0.14 162);
   }
 
   /* ────────── dark · graphite · bright slate→paper ────────── */
@@ -79,6 +90,11 @@
     --ring-from: oklch(0.74 0.085 235);
     --ring-to: hsl(var(--soma-paper));
     --ring-track: hsl(var(--soma-paper) / 0.18);
+
+    --macro-protein: oklch(0.72 0.12 240);
+    --macro-carbs:   oklch(0.78 0.16 75);
+    --macro-fat:     oklch(0.7 0.17 12);
+    --macro-fiber:   oklch(0.74 0.13 165);
   }
 
   /* ────────── mid · midnight · teal-leaning slate→paper ────────── */
@@ -97,6 +113,11 @@
     --ring-from: oklch(0.7 0.1 215);
     --ring-to: hsl(var(--soma-paper));
     --ring-track: hsl(var(--soma-paper) / 0.18);
+
+    --macro-protein: oklch(0.74 0.13 230);
+    --macro-carbs:   oklch(0.8 0.17 75);
+    --macro-fat:     oklch(0.7 0.17 10);
+    --macro-fiber:   oklch(0.76 0.14 170);
   }
 
   /* ────────── deep · slate-deep · paper→vivid slate ────────── */
@@ -115,6 +136,11 @@
     --ring-from: hsl(var(--soma-paper));
     --ring-to: oklch(0.62 0.12 240);
     --ring-track: hsl(var(--soma-paper) / 0.15);
+
+    --macro-protein: oklch(0.85 0.1 235);
+    --macro-carbs:   oklch(0.88 0.15 78);
+    --macro-fat:     oklch(0.82 0.15 10);
+    --macro-fiber:   oklch(0.85 0.12 165);
   }
 
   /* ────────── slate · slate · paper→ink ────────── */
@@ -132,6 +158,11 @@
     --ring-from: hsl(var(--soma-paper));
     --ring-to: hsl(var(--soma-ink));
     --ring-track: hsl(var(--soma-paper) / 0.2);
+
+    --macro-protein: oklch(0.88 0.1 235);
+    --macro-carbs:   oklch(0.9 0.14 78);
+    --macro-fat:     oklch(0.84 0.14 10);
+    --macro-fiber:   oklch(0.88 0.12 165);
   }
 
   * {

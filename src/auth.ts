@@ -29,8 +29,14 @@ if (hasEmail) {
   providers.push(
     Nodemailer({
       server: {
-        host: 'smtp-relay.brevo.com',
+        // Gmail SMTP over STARTTLS. EMAIL_SERVER_USER must be the Gmail
+        // address itself; EMAIL_SERVER_PASSWORD must be a Gmail App
+        // Password (16 chars, no spaces) — Gmail killed regular-password
+        // SMTP in 2022. EMAIL_FROM must match (or be wrapped around) the
+        // same address; Gmail rewrites the From header otherwise.
+        host: 'smtp.gmail.com',
         port: 587,
+        secure: false,
         auth: {
           user: process.env.EMAIL_SERVER_USER!,
           pass: process.env.EMAIL_SERVER_PASSWORD!,

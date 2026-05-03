@@ -44,6 +44,7 @@ export async function POST(req: Request) {
   if (file.size > MAX_BYTES) {
     return NextResponse.json({ error: 'Image too large (max 8 MB)' }, { status: 413 });
   }
+  const context = (form.get('context') as string | null)?.slice(0, 1000) ?? undefined;
 
   let imageBase64: string;
   try {
@@ -59,6 +60,7 @@ export async function POST(req: Request) {
       model: process.env.OPENROUTER_MODEL,
       imageBase64,
       mimeType: file.type || 'image/jpeg',
+      context,
       siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
     });
     return NextResponse.json(scan);
