@@ -6,12 +6,12 @@ import { getDb } from './db';
 
 const providers: NextAuthConfig['providers'] = [];
 
-const hasGoogle = Boolean(process.env.830966186655-9i064bm0ba5nn844v886c5njohfphlv4.apps.googleusercontent.com && process.env.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);
+const hasGoogle = Boolean(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET);
 if (hasGoogle) {
   providers.push(
     Google({
-      clientId: process.env.830966186655-9i064bm0ba5nn844v886c5njohfphlv4.apps.googleusercontent.com!,
-      clientSecret: process.env.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!,
+      clientId: process.env.AUTH_GOOGLE_ID!,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
     }),
   );
 }
