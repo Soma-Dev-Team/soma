@@ -1,6 +1,6 @@
 import NextAuth, { type NextAuthConfig } from 'next-auth';
 import Google from 'next-auth/providers/google';
-import Resend from 'next-auth/providers/resend';
+import Nodemailer from 'next-auth/providers/nodemailer';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import { getDb } from './db';
 
@@ -19,11 +19,23 @@ if (hasGoogle) {
 const db = getDb();
 const adapter = db ? DrizzleAdapter(db) : undefined;
 
-const hasResend = Boolean(adapter && process.env.AUTH_RESEND_KEY && process.env.EMAIL_FROM);
-if (hasResend) {
+const hasEmail = Boolean(
+  adapter &&
+  process.env.EMAIL_SERVER_USER &&
+  process.env.EMAIL_SERVER_PASSWORD &&
+  process.env.EMAIL_FROM
+);
+if (hasEmail) {
   providers.push(
-    Resend({
-      apiKey: process.env.AUTH_RESEND_KEY!,
+    Nodemailer({
+      server: {
+        host: 'smtp-relay.brevo.com',
+        port: 587,
+        auth: {
+          user: process.env.EMAIL_SERVER_USER!,
+          pass: process.env.EMAIL_SERVER_PASSWORD!,
+        },
+      },
       from: process.env.EMAIL_FROM!,
     }),
   );
@@ -53,5 +65,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth(config);
 export const { GET, POST } = handlers;
 
 export const isAuthConfigured = providers.length > 0;
-export const hasMagicLink = hasResend;
+export const hasMagicLink = hasEmail;
 export const hasGoogleOAuth = hasGoogle;
