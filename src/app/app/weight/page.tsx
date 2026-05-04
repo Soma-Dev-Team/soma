@@ -83,7 +83,7 @@ export default function WeightPage() {
 
       {summary && (
         <Card>
-          <CardContent className="pt-6 pb-5">
+          <CardContent className="pt-6 pb-5 space-y-5">
             <div className="grid grid-cols-3 gap-2 place-items-center">
               <StatRing
                 label="Latest"
@@ -109,6 +109,17 @@ export default function WeightPage() {
                 size={104}
               />
             </div>
+
+            {profile?.target_weight_kg != null &&
+              profile?.start_weight_kg != null &&
+              profile.target_weight_kg !== profile.start_weight_kg && (
+                <GoalRing
+                  startKg={profile.start_weight_kg}
+                  targetKg={profile.target_weight_kg}
+                  currentKg={summary.latestKg}
+                  isImperial={isImperial}
+                />
+              )}
           </CardContent>
         </Card>
       )}
@@ -224,6 +235,63 @@ export default function WeightPage() {
           </CardContent>
         </Card>
       )}
+    </div>
+  );
+}
+
+function GoalRing({
+  startKg,
+  targetKg,
+  currentKg,
+  isImperial,
+}: {
+  startKg: number;
+  targetKg: number;
+  currentKg: number;
+  isImperial: boolean;
+}) {
+  const totalDelta = targetKg - startKg; // signed
+  const elapsedDelta = currentKg - startKg; // signed
+  // Progress is the fraction of the journey completed in the goal's direction.
+  // If goal is to lose 10kg and you've lost 4, that's 40%.
+  let pct = 0;
+  if (totalDelta !== 0) {
+    pct = Math.max(0, Math.min(1, elapsedDelta / totalDelta));
+  }
+  const remainingKg = Math.abs(targetKg - currentKg);
+  const u = (kg: number) => (isImperial ? kgToLbs(kg) : kg);
+  const unit = isImperial ? 'lb' : 'kg';
+
+  return (
+    <div className="flex items-center gap-5 pt-2 border-t border-border">
+      <StatRing
+        label="Goal"
+        value={Math.round(pct * 100)}
+        unit="%"
+        target={100}
+        sub={`to ${u(targetKg).toFixed(1)} ${unit}`}
+        size={120}
+      />
+      <div className="flex-1 space-y-1 text-sm">
+        <div>
+          <span className="label-mono text-muted-foreground">START</span>{' '}
+          <span className="num">
+            {u(startKg).toFixed(1)} {unit}
+          </span>
+        </div>
+        <div>
+          <span className="label-mono text-muted-foreground">TARGET</span>{' '}
+          <span className="num">
+            {u(targetKg).toFixed(1)} {unit}
+          </span>
+        </div>
+        <div>
+          <span className="label-mono text-muted-foreground">REMAINING</span>{' '}
+          <span className="num">
+            {u(remainingKg).toFixed(1)} {unit}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

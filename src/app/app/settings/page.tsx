@@ -139,16 +139,6 @@ export default function SettingsPage() {
               label={t('connect_strava')}
               connected={connected.get('strava')}
             />
-            <IntegrationRow
-              provider="withings"
-              label={t('connect_withings')}
-              connected={connected.get('withings')}
-            />
-            <IntegrationRow
-              provider="garmin"
-              label={t('connect_garmin')}
-              connected={connected.get('garmin')}
-            />
           </div>
         </CardContent>
       </Card>

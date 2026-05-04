@@ -11,6 +11,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen md:flex relative">
       <AmbientParticles />
       <ProfileSync />
+      {/* Bottom vignette — soft fade so the bottom nav reads cleanly on busy
+          backgrounds. Pointer events off so it never blocks input. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-10 h-24 md:hidden"
+        style={{
+          background:
+            'linear-gradient(to top, hsl(var(--background)) 0%, transparent 100%)',
+        }}
+      />
       <AppNav />
       <div
         className="flex-1 min-w-0 md:pb-0 relative z-10"

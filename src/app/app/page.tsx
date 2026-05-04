@@ -10,11 +10,13 @@ import { CalorieRing, type GoalMode } from '@/components/calorie-ring';
 import { MacroRings } from '@/components/macro-rings';
 import { MealList } from '@/components/meal-list';
 import { PageStagger, stackItem } from '@/components/page-shell';
+import { TodayHeader } from '@/components/today-header';
 import { calorieLabel } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { getDB } from '@/lib/db/dexie';
-import { deleteMeal, getProfile, listMealsForDay } from '@/lib/db/repo';
+import { deleteMeal, getProfile, listMealsForDay, listMealsBetween } from '@/lib/db/repo';
+import { startOfDay, subDays } from 'date-fns';
 
 export default function TodayPage() {
   const router = useRouter();
@@ -22,6 +24,29 @@ export default function TodayPage() {
 
   const profile = useLiveQuery(() => getProfile(), []);
   const meals = useLiveQuery(() => listMealsForDay(today), [today]);
+
+  // Streak: count back from today through any consecutive days that have at
+  // least one logged meal.
+  const recentMeals = useLiveQuery(async () => {
+    const end = new Date();
+    const start = subDays(startOfDay(end), 60);
+    return listMealsBetween(start, end);
+  }, []);
+  const streak = useMemo(() => {
+    if (!recentMeals || recentMeals.length === 0) return 0;
+    const days = new Set<string>();
+    for (const m of recentMeals) {
+      const d = startOfDay(new Date(m.logged_at));
+      days.add(d.toDateString());
+    }
+    let count = 0;
+    let cursor = startOfDay(new Date());
+    while (days.has(cursor.toDateString())) {
+      count += 1;
+      cursor = subDays(cursor, 1);
+    }
+    return count;
+  }, [recentMeals]);
   const foods = useLiveQuery(async () => {
     const all = await getDB().foods.toArray();
     return new Map(all.map((f) => [f.id, f]));
@@ -82,9 +107,39 @@ export default function TodayPage() {
     fiber_g: 30,
   };
 
+  // Glow tint = the macro furthest along toward its target. Subtle visual cue
+  // for what's been driving the day. Defaults to protein when nothing logged.
+  const glowVar = useMemo(() => {
+    const ratios: Array<[string, number]> = [
+      ['var(--macro-protein)', totals.protein_g / Math.max(1, targets.protein_g)],
+      ['var(--macro-carbs)', totals.carbs_g / Math.max(1, targets.carbs_g)],
+      ['var(--macro-fat)', totals.fat_g / Math.max(1, targets.fat_g)],
+      ['var(--macro-fiber)', totals.fiber_g / Math.max(1, targets.fiber_g)],
+    ];
+    ratios.sort((a, b) => b[1] - a[1]);
+    return ratios[0][1] > 0 ? ratios[0][0] : 'var(--macro-protein)';
+  }, [totals, targets]);
+
   return (
     <PageStagger className="space-y-6">
-      <motion.div variants={stackItem} animate={controls} className="flex items-center justify-center pt-2">
+      <motion.div variants={stackItem}>
+        <TodayHeader streak={streak} />
+      </motion.div>
+
+      <motion.div variants={stackItem} animate={controls} className="relative flex items-center justify-center pt-2">
+        {/* Soft radial glow behind the ring, tinted by the leading macro */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 flex items-center justify-center"
+        >
+          <div
+            className="h-[260px] w-[260px] rounded-full opacity-50"
+            style={{
+              background: `radial-gradient(circle, ${glowVar} 0%, transparent 70%)`,
+              filter: 'blur(40px)',
+            }}
+          />
+        </div>
         <CalorieRing
           consumed={totals.kcal}
           goal={goal}

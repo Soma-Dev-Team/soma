@@ -2,14 +2,10 @@ import { NextResponse } from 'next/server';
 
 const TOKEN_URLS: Record<string, string> = {
   strava: 'https://www.strava.com/api/v3/oauth/token',
-  withings: 'https://wbsapi.withings.net/v2/oauth2',
-  garmin: 'https://connectapi.garmin.com/oauth-service/oauth/access_token',
 };
 
 const ENV_KEYS: Record<string, [string, string]> = {
   strava: ['STRAVA_CLIENT_ID', 'STRAVA_CLIENT_SECRET'],
-  withings: ['WITHINGS_CLIENT_ID', 'WITHINGS_CLIENT_SECRET'],
-  garmin: ['GARMIN_CLIENT_ID', 'GARMIN_CLIENT_SECRET'],
 };
 
 function bounce(origin: string, fragment: Record<string, string>) {

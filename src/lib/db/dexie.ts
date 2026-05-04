@@ -19,6 +19,10 @@ export interface Profile extends SyncMeta {
   target_protein_g?: number;
   target_carbs_g?: number;
   target_fat_g?: number;
+  /** Weight at the start of the current goal (kg). Set on onboarding. */
+  start_weight_kg?: number;
+  /** Where the user is heading (kg). Set when goal is lose/gain. */
+  target_weight_kg?: number;
   units?: 'metric' | 'imperial';
   locale?: string;
   onboarded?: boolean;
@@ -65,7 +69,7 @@ export interface MealLog extends SyncMeta {
 export interface ActivityLog extends SyncMeta {
   id: string;
   user_id?: string;
-  source: 'strava' | 'garmin' | 'withings' | 'manual';
+  source: 'strava' | 'manual';
   source_id?: string;
   activity_type?: string;
   duration_min?: number;
@@ -75,7 +79,7 @@ export interface ActivityLog extends SyncMeta {
 }
 
 export interface Integration extends SyncMeta {
-  provider: 'strava' | 'garmin' | 'withings';
+  provider: 'strava';
   access_token: string;
   refresh_token?: string;
   expires_at?: string;

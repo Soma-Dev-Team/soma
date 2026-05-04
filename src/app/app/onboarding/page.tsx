@@ -32,6 +32,7 @@ interface Draft {
   birth_date: string;
   height_cm: number;
   weight_kg: number;
+  target_weight_kg: number;
   goal: Goal;
   pace: Pace;
   activity: ActivityLevel;
@@ -50,6 +51,7 @@ export default function OnboardingPage() {
     birth_date: '1995-01-01',
     height_cm: 175,
     weight_kg: 75,
+    target_weight_kg: 75,
     goal: 'maintain',
     pace: 'moderate',
     activity: 'moderate',
@@ -78,6 +80,8 @@ export default function OnboardingPage() {
       target_protein_g: macros.protein_g,
       target_carbs_g: macros.carbs_g,
       target_fat_g: macros.fat_g,
+      start_weight_kg: d.weight_kg,
+      target_weight_kg: d.goal === 'maintain' ? d.weight_kg : d.target_weight_kg,
       units: d.units,
       onboarded: true,
     });
@@ -194,7 +198,41 @@ export default function OnboardingPage() {
                 </UnitButton>
               </div>
               {d.goal !== 'maintain' && (
-                <div className="space-y-2 pt-2">
+                <div className="space-y-3 pt-2">
+                  <div className="space-y-1.5">
+                    <Label>Target weight</Label>
+                    {d.units === 'metric' ? (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          step="0.1"
+                          value={Number(d.target_weight_kg.toFixed(1))}
+                          onChange={(e) =>
+                            update({ target_weight_kg: Number(e.target.value) })
+                          }
+                        />
+                        <span className="text-muted-foreground">kg</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          step="0.1"
+                          value={Number(kgToLbs(d.target_weight_kg).toFixed(1))}
+                          onChange={(e) =>
+                            update({ target_weight_kg: lbsToKg(Number(e.target.value)) })
+                          }
+                        />
+                        <span className="text-muted-foreground">lb</span>
+                      </div>
+                    )}
+                    <p className="text-xs text-muted-foreground num">
+                      Currently {d.units === 'metric'
+                        ? `${d.weight_kg.toFixed(1)} kg`
+                        : `${kgToLbs(d.weight_kg).toFixed(1)} lb`}{' '}
+                      → target.
+                    </p>
+                  </div>
                   {(['mild', 'moderate', 'aggressive'] as const).map((p) => {
                     const name = p.charAt(0).toUpperCase() + p.slice(1);
                     return (

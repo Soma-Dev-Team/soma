@@ -12,16 +12,6 @@ const PROVIDERS: Record<string, ProviderConfig> = {
     scope: 'read,activity:read_all',
     clientIdEnv: 'STRAVA_CLIENT_ID',
   },
-  withings: {
-    authUrl: 'https://account.withings.com/oauth2_user/authorize2',
-    scope: 'user.metrics,user.activity',
-    clientIdEnv: 'WITHINGS_CLIENT_ID',
-  },
-  garmin: {
-    authUrl: 'https://connect.garmin.com/oauthConfirm',
-    scope: '',
-    clientIdEnv: 'GARMIN_CLIENT_ID',
-  },
 };
 
 export async function GET(req: Request, { params }: { params: Promise<{ provider: string }> }) {

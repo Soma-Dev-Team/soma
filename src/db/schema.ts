@@ -39,6 +39,8 @@ export interface SyncedProfile {
   target_protein_g?: number;
   target_carbs_g?: number;
   target_fat_g?: number;
+  start_weight_kg?: number;
+  target_weight_kg?: number;
   display_name?: string;
   onboarded?: boolean;
 }

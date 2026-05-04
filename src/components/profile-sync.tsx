@@ -17,6 +17,8 @@ const PROFILE_FIELDS: (keyof Profile)[] = [
   'target_protein_g',
   'target_carbs_g',
   'target_fat_g',
+  'start_weight_kg',
+  'target_weight_kg',
   'units',
   'locale',
   'display_name',

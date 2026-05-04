@@ -127,11 +127,7 @@
     "export": "Export JSON",
     "delete": "Delete account",
     "wipe_local": "Clear local data",
-    "gemini_key_label": "Gemini API key",
-    "gemini_key_help": "Get a free key from Google AI Studio. It's stored only in your browser.",
-    "connect_strava": "Connect Strava",
-    "connect_withings": "Connect Withings",
-    "connect_garmin": "Connect Garmin"
+    "connect_strava": "Connect Strava"
   },
   "common": {
     "save": "Save",
